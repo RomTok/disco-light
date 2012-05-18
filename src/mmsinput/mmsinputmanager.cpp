@@ -31,6 +31,7 @@
  **************************************************************************/
 
 #include "mmsinput/mmsinputmanager.h"
+#include "mmsbase/mmseventsignup.h"
 
 #ifndef __LIS_DEBUG__
 #undef MSG2OUT
@@ -43,6 +44,11 @@ MMSInputManager::MMSInputManager(string file, string name) {
 	this->buttonpress_window = NULL;
 	this->button_pressed = false;
 	clock_gettime(CLOCK_REALTIME,&this->lastinput);
+
+    MMSEventSignup *sign = new MMSEventSignup();
+    sign->add("MMSINPUTEVENT");
+    sign->getSignal()->connect(sigc::mem_fun(this, &MMSInputManager::onEvent));
+    sign->executeSignup();
 }
 
 MMSInputManager::~MMSInputManager() {
@@ -121,6 +127,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				/* ok execute input on window */
 				window->handleInput(inputevent);
 				memset(inputevent, 0, sizeof(MMSInputEvent));
+				inputevent->type = MMSINPUTEVENTTYPE_NONE;
 				this->mutex.unlock();
 				mmsfb->unlock();
 				return;
@@ -158,6 +165,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		if(window != NULL)
 			window->handleInput(inputevent);
 			memset(inputevent, 0, sizeof(MMSInputEvent));
+			inputevent->type = MMSINPUTEVENTTYPE_NONE;
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYRELEASE) {
@@ -180,6 +188,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		if(window != NULL)
 			window->handleInput(inputevent);
 			memset(inputevent, 0, sizeof(MMSInputEvent));
+			inputevent->type = MMSINPUTEVENTTYPE_NONE;
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
@@ -214,6 +223,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				mmsfb->unlock();
 				this->mutex.unlock();
 				memset(inputevent, 0, sizeof(MMSInputEvent));
+				inputevent->type = MMSINPUTEVENTTYPE_NONE;
 				return;
 			}
 			if(inputevent->posx < 0 || inputevent->posy<0) {
@@ -237,6 +247,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 
 			window->handleInput(inputevent);
 			memset(inputevent, 0, sizeof(MMSInputEvent));
+			inputevent->type = MMSINPUTEVENTTYPE_NONE;
 		}
 	}
 	else
@@ -277,6 +288,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				if (window->handleInput(inputevent)) {
 					this->buttonpress_window = NULL;
 					memset(inputevent, 0, sizeof(MMSInputEvent));
+					inputevent->type = MMSINPUTEVENTTYPE_NONE;
 					mmsfb->unlock();
 					this->mutex.unlock();
 					return;
@@ -308,6 +320,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 						// stop it only one key per subscription
 						DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
 						memset(inputevent, 0, sizeof(MMSInputEvent));
+						inputevent->type = MMSINPUTEVENTTYPE_NONE;
 						mmsfb->unlock();
 						this->mutex.unlock();
 						return;
@@ -358,6 +371,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			if(this->oldx == inputevent->absx && this->oldy == inputevent->absy) {
 
 				memset(inputevent, 0, sizeof(MMSInputEvent));
+				inputevent->type = MMSINPUTEVENTTYPE_NONE;
 				mmsfb->unlock();
 				this->mutex.unlock();
 				return;
@@ -370,6 +384,7 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 
 			window->handleInput(inputevent);
 			memset(inputevent, 0, sizeof(MMSInputEvent));
+			inputevent->type = MMSINPUTEVENTTYPE_NONE;
 		}
 	}
 
@@ -404,4 +419,46 @@ void MMSInputManager::stopListen() {
 
 void MMSInputManager::addSubscription(class MMSInputSubscription *sub)  {
 	this->subscriptions.push_back(sub);
+}
+
+void MMSInputManager::onEvent(_IMMSEvent *event) {
+	string heading = event->getHeading();
+
+	MMSInputEvent inputevent;
+	if (heading == "MMSINPUTEVENT.KEYPRESS") {
+		MMSKeyMap km;
+		inputevent.type	= MMSINPUTEVENTTYPE_KEYPRESS;
+		inputevent.key	= km[event->getData("key").c_str()];
+		handleInput(&inputevent);
+	}
+	else
+	if (heading == "MMSINPUTEVENT.KEYRELEASE") {
+		MMSKeyMap km;
+		inputevent.type	= MMSINPUTEVENTTYPE_KEYRELEASE;
+		inputevent.key	= km[event->getData("key").c_str()];
+		handleInput(&inputevent);
+	}
+	else {
+		inputevent.posx	= atoi(event->getData("posx").c_str());
+		inputevent.posy	= atoi(event->getData("posy").c_str());
+		inputevent.dx	= 0;
+		inputevent.dy	= 0;
+		inputevent.absx	= 0;
+		inputevent.absy	= 0;
+
+		if (heading == "MMSINPUTEVENT.BUTTONPRESS") {
+			inputevent.type	= MMSINPUTEVENTTYPE_BUTTONPRESS;
+			handleInput(&inputevent);
+		}
+		else
+		if (heading == "MMSINPUTEVENT.BUTTONRELEASE") {
+			inputevent.type	= MMSINPUTEVENTTYPE_BUTTONRELEASE;
+			handleInput(&inputevent);
+		}
+		else
+		if (heading == "MMSINPUTEVENT.AXISMOTION") {
+			inputevent.type	= MMSINPUTEVENTTYPE_AXISMOTION;
+			handleInput(&inputevent);
+		}
+	}
 }
