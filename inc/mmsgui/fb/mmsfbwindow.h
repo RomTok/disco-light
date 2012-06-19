@@ -43,6 +43,7 @@ typedef struct {
     int                 posy;           /* pos y */
     unsigned char       opacity;        /* opacity of the window */
     bool                shown;          /* is the window currently shown */
+    int					zlevel;
 } MMSFBWindowConfig;
 
 //! This class describes a window on a specific layer.

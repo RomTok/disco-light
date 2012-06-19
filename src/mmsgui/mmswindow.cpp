@@ -124,6 +124,9 @@ MMSWindow::MMSWindow() {
 
     this->need_redraw = false;
 
+    this->zbaselevel = 0;
+
+
     // initialize the callbacks
     onBeforeShow        = new sigc::signal<bool, MMSWindow*>::accumulated<bool_accumulator>;
     onAfterShow         = new sigc::signal<void, MMSWindow*, bool>;
@@ -343,6 +346,22 @@ bool MMSWindow::create(string dx, string dy, string w, string h, MMSALIGNMENT al
     this->willhide=false;
 
     buffered_shown = false;
+
+    // set zbaselevel dependent on window type
+    switch (getType()) {
+    case MMSWINDOWTYPE_POPUPWINDOW:
+    	this->zbaselevel = 100;
+    	break;
+    case MMSWINDOWTYPE_MAINWINDOW:
+    	this->zbaselevel = 200;
+    	break;
+    case MMSWINDOWTYPE_ROOTWINDOW:
+    	this->zbaselevel = 300;
+    	break;
+    default:
+    	this->zbaselevel = 0;
+    	break;
+    }
 
     // resize/create the window
     if (this->windowmanager)
@@ -2155,12 +2174,12 @@ void MMSWindow::showBufferedShown() {
 }
 
 
-
 bool MMSWindow::raiseToTop(int zlevel) {
     if (!this->parent) {
         // normal parent window, set the window to top
         if (this->window) {
-            return this->window->raiseToTop(zlevel);
+        	// raise MMSFBWindow to top (zbaselevel + zlevel)
+           	return this->window->raiseToTop(this->zbaselevel + zlevel);
         }
         return false;
     }

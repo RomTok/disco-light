@@ -250,7 +250,7 @@ bool MMSFBWindowManager::removeWindow(MMSFBWindow *window) {
     return false;
 }
 
-bool MMSFBWindowManager::raiseToTop(MMSFBWindow *window, int zlevel) {
+bool MMSFBWindowManager::raiseToTop(MMSFBWindow *window) {
 
     // check if initialized
     INITCHECK;
@@ -258,7 +258,55 @@ bool MMSFBWindowManager::raiseToTop(MMSFBWindow *window, int zlevel) {
     // stop parallel processing
     lock.lock();
 
-    // get requested zorder index
+    // search for item
+    for (unsigned int oldpos = 0; oldpos < this->vwins.size(); oldpos++) {
+        if (this->vwins.at(oldpos).window == window) {
+            // reload windows config
+            loadWindowConfig(window, &(this->vwins.at(oldpos)));
+            VISIBLE_WINDOWS vw = this->vwins.at(oldpos);
+            int newpos = oldpos;
+
+            if (oldpos > 0) {
+            	// check zlevel against lower windows
+                for (unsigned int i = oldpos - 1; i >= 0; i--) {
+                	if (vw.zlevel <= this->vwins.at(i).zlevel) {
+                		break;
+                	}
+                	newpos = i;
+                }
+            }
+
+            if (oldpos + 1 < this->vwins.size()) {
+            	// check zlevel against upper windows
+                for (unsigned int i = oldpos + 1; i < this->vwins.size(); i++) {
+                	if (vw.zlevel > this->vwins.at(i).zlevel) {
+                		break;
+                	}
+                	newpos = i;
+                }
+            }
+
+            if (newpos != oldpos) {
+            	// change position in the visible window stack
+                this->vwins.erase(this->vwins.begin()+oldpos);
+                this->vwins.insert(this->vwins.begin()+newpos, vw);
+
+				// draw the window
+				flipSurface(vw.surface, NULL, true);
+            }
+
+            // unlock
+            lock.unlock();
+            return true;
+        }
+    }
+
+    // not found
+    lock.unlock();
+    return false;
+
+
+/*    // get requested zorder index
     zlevel = this->vwins.size() - 1 - zlevel;
     if (zlevel < 0)
     	zlevel = 0;
@@ -321,11 +369,11 @@ bool MMSFBWindowManager::raiseToTop(MMSFBWindow *window, int zlevel) {
             lock.unlock();
             return true;
         }
-
-
     // not found
     lock.unlock();
     return false;
+*/
+
 }
 
 bool MMSFBWindowManager::lowerToBottom(MMSFBWindow *window) {
@@ -420,6 +468,7 @@ bool MMSFBWindowManager::loadWindowConfig(MMSFBWindow *window, VISIBLE_WINDOWS *
     }
     vwin->alphachannel = winconf.surface_config.surface_buffer->alphachannel;
     vwin->opacity = winconf.opacity;
+    vwin->zlevel = winconf.zlevel;
     vwin->lastflip = 0;
     vwin->islayersurface = false;
     vwin->saved_surface = NULL;
@@ -428,15 +477,60 @@ bool MMSFBWindowManager::loadWindowConfig(MMSFBWindow *window, VISIBLE_WINDOWS *
 
 bool MMSFBWindowManager::showWindow(MMSFBWindow *window, bool locked, bool refresh) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
-    /* stop parallel processing */
+    // stop parallel processing
     if (!locked)
         lock.lock();
 
-    /* search for item */
-    for (unsigned int i=0; i < this->windows.size(); i++)
+    // search for item
+    for (unsigned int i = 0; i < this->windows.size(); i++) {
+        if (this->windows.at(i).window == window) {
+            // search for duplicate items
+            for (unsigned int j = 0; j < this->vwins.size(); j++) {
+                if (this->vwins.at(j).window == window) {
+                    // the window is already visible
+                    if (!locked)
+                        lock.unlock();
+                    return false;
+                }
+			}
+
+            // prepare new list item
+            VISIBLE_WINDOWS vw;
+            loadWindowConfig(window, &vw);
+            int pos = 0;
+
+            for (unsigned int j = 0; j < this->vwins.size(); j++) {
+            	if (vw.zlevel > this->vwins.at(j).zlevel) {
+            		break;
+            	}
+            	pos = j + 1;
+            }
+
+            // add window to visible list
+            this->vwins.insert(this->vwins.begin() + pos, vw);
+
+            // draw the window
+            flipSurface(vw.surface, NULL, true, refresh);
+
+            // unlock
+            if (!locked)
+                lock.unlock();
+
+            return true;
+        }
+    }
+
+    // not found
+    if (!locked)
+    	lock.unlock();
+    return false;
+
+
+#ifdef dddddd
+    for (unsigned int i = 0; i < this->windows.size(); i++) {
         if (this->windows.at(i).window == window) {
             /* search for duplicate items */
             for (unsigned int j=0; j < this->vwins.size(); j++)
@@ -478,10 +572,13 @@ bool MMSFBWindowManager::showWindow(MMSFBWindow *window, bool locked, bool refre
 
             return true;
         }
-
-    /* not found */
+    }
+    // not found
     lock.unlock();
     return false;
+#endif
+
+
 }
 
 bool MMSFBWindowManager::hideWindow(MMSFBWindow *window, bool locked, bool refresh) {

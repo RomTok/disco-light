@@ -91,12 +91,12 @@ bool MMSWindowManager::lowerToBottom(MMSWindow *window) {
 bool MMSWindowManager::raiseToTop(MMSWindow *window) {
     // searching for popup windows and count it
 	int cnt = 0;
-    for(unsigned int i = 0; i < windows.size(); i++) {
+/*    for(unsigned int i = 0; i < windows.size(); i++) {
         if (windows.at(i)->getType() == MMSWINDOWTYPE_POPUPWINDOW) {
             if (windows.at(i)->isShown()) cnt++;
         }
     }
-
+*/
     // raise window to top, cnt number of windows are over it
     return window->raiseToTop(cnt);
 }

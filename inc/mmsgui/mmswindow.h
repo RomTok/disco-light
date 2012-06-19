@@ -379,6 +379,8 @@ class MMSWindow {
 
 		bool			need_redraw;
 
+		int zbaselevel;
+
 
         //! Internal method: Creates the window.
         bool create(string dx, string dy, string w, string h, MMSALIGNMENT alignment, MMSWINDOW_FLAGS flags,

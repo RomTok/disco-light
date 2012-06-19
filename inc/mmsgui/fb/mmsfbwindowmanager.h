@@ -58,6 +58,8 @@ typedef struct {
     bool            alphachannel;
     //! opacity of the window
     unsigned char   opacity;
+    //! zlevel of the window
+    int				zlevel;
     //! last flip time in milliseconds
     int             lastflip;
     //! the window works direct on the layer (old staff, to be removed)
@@ -115,7 +117,7 @@ class MMSFBWindowManager {
         bool addWindow(MMSFBWindow *window);
         bool removeWindow(MMSFBWindow *window);
 
-        bool raiseToTop(MMSFBWindow *window, int zlevel = 0);
+        bool raiseToTop(MMSFBWindow *window);
         bool lowerToBottom(MMSFBWindow *window);
 
         bool loadWindowConfig(MMSFBWindow *window, VISIBLE_WINDOWS *vwin);
