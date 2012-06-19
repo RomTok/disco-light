@@ -127,7 +127,6 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				/* ok execute input on window */
 				window->handleInput(inputevent);
 				memset(inputevent, 0, sizeof(MMSInputEvent));
-				inputevent->type = MMSINPUTEVENTTYPE_NONE;
 				this->mutex.unlock();
 				mmsfb->unlock();
 				return;
@@ -165,7 +164,6 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		if(window != NULL)
 			window->handleInput(inputevent);
 			memset(inputevent, 0, sizeof(MMSInputEvent));
-			inputevent->type = MMSINPUTEVENTTYPE_NONE;
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_KEYRELEASE) {
@@ -188,7 +186,6 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		if(window != NULL)
 			window->handleInput(inputevent);
 			memset(inputevent, 0, sizeof(MMSInputEvent));
-			inputevent->type = MMSINPUTEVENTTYPE_NONE;
 	}
 	else
 	if (inputevent->type == MMSINPUTEVENTTYPE_BUTTONPRESS) {
@@ -223,7 +220,6 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				mmsfb->unlock();
 				this->mutex.unlock();
 				memset(inputevent, 0, sizeof(MMSInputEvent));
-				inputevent->type = MMSINPUTEVENTTYPE_NONE;
 				return;
 			}
 			if(inputevent->posx < 0 || inputevent->posy<0) {
@@ -247,7 +243,6 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 
 			window->handleInput(inputevent);
 			memset(inputevent, 0, sizeof(MMSInputEvent));
-			inputevent->type = MMSINPUTEVENTTYPE_NONE;
 		}
 	}
 	else
@@ -288,7 +283,6 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 				if (window->handleInput(inputevent)) {
 					this->buttonpress_window = NULL;
 					memset(inputevent, 0, sizeof(MMSInputEvent));
-					inputevent->type = MMSINPUTEVENTTYPE_NONE;
 					mmsfb->unlock();
 					this->mutex.unlock();
 					return;
@@ -320,7 +314,6 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 						// stop it only one key per subscription
 						DEBUGMSG("MMSINPUTMANAGER", "returning from handle input");
 						memset(inputevent, 0, sizeof(MMSInputEvent));
-						inputevent->type = MMSINPUTEVENTTYPE_NONE;
 						mmsfb->unlock();
 						this->mutex.unlock();
 						return;
@@ -371,7 +364,6 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 			if(this->oldx == inputevent->absx && this->oldy == inputevent->absy) {
 
 				memset(inputevent, 0, sizeof(MMSInputEvent));
-				inputevent->type = MMSINPUTEVENTTYPE_NONE;
 				mmsfb->unlock();
 				this->mutex.unlock();
 				return;
@@ -384,7 +376,6 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 
 			window->handleInput(inputevent);
 			memset(inputevent, 0, sizeof(MMSInputEvent));
-			inputevent->type = MMSINPUTEVENTTYPE_NONE;
 		}
 	}
 
@@ -425,6 +416,8 @@ void MMSInputManager::onEvent(_IMMSEvent *event) {
 	string heading = event->getHeading();
 
 	MMSInputEvent inputevent;
+	memset(&inputevent, 0, sizeof(MMSInputEvent));
+
 	if (heading == "MMSINPUTEVENT.KEYPRESS") {
 		MMSKeyMap km;
 		inputevent.type	= MMSINPUTEVENTTYPE_KEYPRESS;
