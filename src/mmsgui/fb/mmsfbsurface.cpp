@@ -2138,7 +2138,7 @@ bool MMSFBSurface::fillRectangle(int x, int y, int w, int h) {
     	return true;
 	}
 
-	if (((this->config.drawingflags & MMSFB_DRAW_BLEND) == 0) || this->config.color.a == 0xff) {
+	if ((((this->config.drawingflags & MMSFB_DRAW_BLEND) == 0) || this->config.color.a == 0xff) && !this->is_sub_surface) {
 		// we can write color directly to destination without blending
 		// so we can use clear method instead of fill rectangle
 		MMSFBRegion clip;
