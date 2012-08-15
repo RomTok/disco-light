@@ -68,7 +68,9 @@ namespace MMSGUI_FONT_ATTR {
 		{ "font.name.tr", TAFF_ATTRTYPE_STRING }, \
 		{ "font.name.cn", TAFF_ATTRTYPE_STRING }, \
 		{ "font.name.il", TAFF_ATTRTYPE_STRING }, \
-		{ "font.name.ar", TAFF_ATTRTYPE_STRING }
+		{ "font.name.ar", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.cs", TAFF_ATTRTYPE_STRING }, \
+		{ "font.name.ru", TAFF_ATTRTYPE_STRING }
 
 	#define MMSGUI_FONT_ATTR_IDS \
 		MMSGUI_FONT_ATTR_IDS_font_path, \
@@ -87,7 +89,9 @@ namespace MMSGUI_FONT_ATTR {
 		MMSGUI_FONT_ATTR_IDS_font_name_tr, \
 		MMSGUI_FONT_ATTR_IDS_font_name_cn, \
 		MMSGUI_FONT_ATTR_IDS_font_name_il, \
-		MMSGUI_FONT_ATTR_IDS_font_name_ar
+		MMSGUI_FONT_ATTR_IDS_font_name_ar, \
+		MMSGUI_FONT_ATTR_IDS_font_name_cs, \
+		MMSGUI_FONT_ATTR_IDS_font_name_ru
 
 	#define MMSGUI_FONT_ATTR_INIT { \
 		MMSGUI_FONT_ATTR_ATTRDESC, \
@@ -155,6 +159,12 @@ namespace MMSGUI_FONT_ATTR {
 		break; \
 	case w::MMSGUI_FONT_ATTR_IDS_font_name_ar: \
 		setFontName(attrval_str, MMSLANG_AR); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_cs: \
+		setFontName(attrval_str, MMSLANG_CS); \
+		break; \
+	case w::MMSGUI_FONT_ATTR_IDS_font_name_ru: \
+		setFontName(attrval_str, MMSLANG_RU); \
 		break;
 
 
@@ -229,6 +239,14 @@ namespace MMSGUI_FONT_ATTR {
 	else \
 	if (ISFONTATTRNAME(w, font_name_ar)) { \
 		setFontName(attrval_str, MMSLANG_AR); \
+	} \
+	else \
+	if (ISFONTATTRNAME(w, font_name_cs)) { \
+		setFontName(attrval_str, MMSLANG_CS); \
+	} \
+	else \
+	if (ISFONTATTRNAME(w, font_name_ru)) { \
+		setFontName(attrval_str, MMSLANG_RU); \
 	}
 
 

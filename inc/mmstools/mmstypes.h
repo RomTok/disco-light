@@ -1106,6 +1106,10 @@ typedef enum {
 	MMSLANG_IL,
 	//! arabic
 	MMSLANG_AR,
+	//! czech
+	MMSLANG_CS,
+	//! russian
+	MMSLANG_RU,
 	//! number of languages
 	MMSLANG_SIZE
 } MMSLanguage;
@@ -1140,6 +1144,10 @@ typedef enum {
 #define MMSLANG_IL_STR			"IL"
 //! language: arabic
 #define MMSLANG_AR_STR			"AR"
+//! language: czech
+#define MMSLANG_CS_STR			"CS"
+//! language: russian
+#define MMSLANG_RU_STR			"RU"
 
 // conversion routines for languages
 string getMMSLanguageString(MMSLanguage lang);

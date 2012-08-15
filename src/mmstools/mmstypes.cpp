@@ -450,6 +450,10 @@ string getMMSLanguageString(MMSLanguage lang) {
         return MMSLANG_IL_STR;
     if (lang == MMSLANG_AR)
         return MMSLANG_AR_STR;
+    if (lang == MMSLANG_CS)
+        return MMSLANG_CS_STR;
+    if (lang == MMSLANG_RU)
+        return MMSLANG_RU_STR;
     return MMSLANG_NONE_STR;
 }
 
@@ -485,6 +489,10 @@ MMSLanguage getMMSLanguageFromString(string lang) {
         return MMSLANG_IL;
     if (lang == MMSLANG_AR_STR)
         return MMSLANG_AR;
+    if (lang == MMSLANG_CS_STR)
+        return MMSLANG_CS;
+    if (lang == MMSLANG_RU_STR)
+        return MMSLANG_RU;
     return MMSLANG_NONE;
 }
 

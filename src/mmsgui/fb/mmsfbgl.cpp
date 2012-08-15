@@ -1008,8 +1008,8 @@ bool MMSFBGL::bindBuffer(GLenum target, GLuint bo) {
 
 			// flush all queued commands to the OpenGL server
 			// but do NOT wait until all queued commands are finished by the OpenGL server
-			glFlush();
-			ERROR_CHECK_BOOL("glFlush()");
+//			glFlush();
+//			ERROR_CHECK_BOOL("glFlush()");
 //printf("this->bound_vbo = %d\n",this->bound_vbo);
 
 			// activate buffer
@@ -1024,8 +1024,8 @@ bool MMSFBGL::bindBuffer(GLenum target, GLuint bo) {
 
 			// flush all queued commands to the OpenGL server
 			// but do NOT wait until all queued commands are finished by the OpenGL server
-			glFlush();
-			ERROR_CHECK_BOOL("glFlush()");
+//			glFlush();
+//			ERROR_CHECK_BOOL("glFlush()");
 
 			// activate buffer
 			glBindBuffer(target, this->bound_ibo);
@@ -1197,8 +1197,8 @@ bool MMSFBGL::bindTexture2D(GLuint tex) {
 	if (tex) {
 		// flush all queued commands to the OpenGL server
 		// but do NOT wait until all queued commands are finished by the OpenGL server
-		glFlush();
-		ERROR_CHECK_BOOL("glFlush()");
+//		glFlush();
+//		ERROR_CHECK_BOOL("glFlush()");
 
 		// activate texture
 		glBindTexture(GL_TEXTURE_2D, tex);
