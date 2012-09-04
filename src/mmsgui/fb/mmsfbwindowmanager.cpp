@@ -565,10 +565,10 @@ bool MMSFBWindowManager::flipSurface(MMSFBSurface *surface, MMSFBRegion *region,
     	// running in OpenGL mode
     	// note: GLX can only flip the complete screen!!!
     	//       EGL too, but currently we run EGL with FRONTONLY, so we do not need a layer flip
-#ifdef  __HAVE_GLX__
+//#ifdef  __HAVE_GLX__
 		surface = NULL;
 		region = NULL;
-#endif
+//#endif
     }
 
 /*

@@ -757,7 +757,7 @@ void MMSFBBackEndInterface::processFillTriangle(BEI_FILLTRIANGLE *req) {
 	if (req->surface->calcClip(x + xoff, y + yoff, w, h, &crect)) {
 		// inside clipping region
 		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
-		glEnable(GL_SCISSOR_TEST);
+//		glEnable(GL_SCISSOR_TEST);
 
 		// fill triangle
 		OGL_FILL_TRIANGLE(req->triangle.x1 + xoff, req->triangle.y1 + yoff,
@@ -902,7 +902,7 @@ void MMSFBBackEndInterface::processDrawTriangle(BEI_DRAWTRIANGLE *req) {
 	if (req->surface->calcClip(x + xoff, y + yoff, w, h, &crect)) {
 		// inside clipping region
 		OGL_SCISSOR(req->surface, crect.x, crect.y, crect.w, crect.h);
-		glEnable(GL_SCISSOR_TEST);
+//		glEnable(GL_SCISSOR_TEST);
 
 		// draw triangle
 		OGL_DRAW_TRIANGLE(req->triangle.x1 + xoff, req->triangle.y1 + yoff,
