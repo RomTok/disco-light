@@ -40,6 +40,7 @@
 
 #include <cstdio>
 #include <stdlib.h>
+#include <unistd.h>
 #include <cerrno>
 #include <cstring>
 

@@ -37,6 +37,7 @@
 #include <string.h>
 #include <cerrno>
 #include <stdlib.h>
+#include <unistd.h>
 
 MMSTCPClient::MMSTCPClient(string host, unsigned int port) {
     this->host = host;
