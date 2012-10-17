@@ -792,7 +792,7 @@ MMSKeySymbol MMSInputLISThread::translateKey(int code) {
 bool MMSInputLISThread::translateEvent(struct input_event *linux_evt, MMSInputEvent *inputevent) {
 	static int x = -1, y = -1;
 	static int px = 0, py = 0;
-	static char pressed = 0xff;
+	static int pressed = 0xff;
 
 	TRACEOUT("MMSINPUT", "EVENT TYPE = %d, CODE = %d, VALUE = %d", linux_evt->type, linux_evt->code, linux_evt->value);
 
