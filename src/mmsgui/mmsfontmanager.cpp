@@ -83,7 +83,7 @@ MMSFBFont *MMSFontManager::getFont(string path, string filename, unsigned int si
     }
     fm_desc.fontfile = fontfile;
     fm_desc.size = size;
-    fm_desc.refcnt = 0;
+    fm_desc.refcnt = 1;
 
     /* add to fonts list and return the font */
     this->fonts.push_back(fm_desc);
