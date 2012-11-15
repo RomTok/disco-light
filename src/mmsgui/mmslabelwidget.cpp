@@ -132,26 +132,14 @@ void MMSLabelWidget::loadFont(MMSLabelWidget *widget) {
 	if (this->rootwindow) {
 		// get font parameter
 		widget->lang = this->rootwindow->windowmanager->getTranslator()->getTargetLang();
-    	string fontpath = widget->getFontPath();
-    	string fontname = widget->getFontName(widget->lang);
-    	unsigned int fontsize = widget->getFontSize();
-
-    	if (fontpath != widget->fontpath || fontname != widget->fontname || fontsize != widget->fontsize || !widget->font) {
-    		// font parameter changed, (re)load it
-			if (widget->font)
-				this->rootwindow->fm->releaseFont(widget->font);
-			widget->fontpath = fontpath;
-			widget->fontname = fontname;
-			widget->fontsize = fontsize;
-			widget->font = this->rootwindow->fm->getFont(widget->fontpath, widget->fontname, widget->fontsize);
-			if (widget->font) {
-				widget->load_font = false;
-			}
-    	}
-    	else {
-    		// font parameter not changed, so we do not reload it
-    		widget->load_font = false;
-    	}
+		if (widget->font) this->rootwindow->fm->releaseFont(widget->font);
+		widget->fontpath = widget->getFontPath();
+		widget->fontname = widget->getFontName(widget->lang);
+		widget->fontsize = widget->getFontSize();
+		widget->font = this->rootwindow->fm->getFont(widget->fontpath, widget->fontname, widget->fontsize);
+		if (widget->font) {
+			widget->load_font = false;
+		}
     }
 }
 
@@ -474,6 +462,7 @@ bool MMSLabelWidget::draw(bool *backgroundFilled) {
 void MMSLabelWidget::targetLangChanged(MMSLanguage lang) {
     this->translated = false;
     this->load_font = true;
+    loadFont();
 
     // recalculate content size for dynamic widgets, because new language can result in new widget size
     // note: DO NOT REFRESH at this point
