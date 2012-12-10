@@ -35,6 +35,7 @@
 
 #include "mmsgui/mmswindow.h"
 #include "mmsgui/mmschildwindow.h"
+#include "mmsgui/mmsmenuwidget.h"
 #include "mmsgui/mmscanvaswidget.h"
 
 // support old renamed methods
@@ -92,6 +93,7 @@ class MMSDialogManager {
         string getCanvasValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getImageValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getProgressBarValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
+        bool   getMenuItems(MMSTaffFile *tafff, MMSMenuWidget *menu, MMSTheme *theme);
         string getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getTextBoxValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
         string getArrowValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme);
@@ -114,6 +116,9 @@ class MMSDialogManager {
         MMSWindow* getWindow();
 
         MMSDescriptionClass getDescription();
+
+        MMSWidget *createWidgetFromTemplate(string className, MMSWidget *parentWidget, MMSWindow *rootWindow = NULL, MMSTheme *theme = NULL);
+        MMSWidget *addWidgetFromTemplate(string className, MMSWidget *parentWidget, MMSWindow *rootWindow = NULL, MMSTheme *theme = NULL);
 };
 
 MMS_CREATEERROR(MMSDialogManagerError);

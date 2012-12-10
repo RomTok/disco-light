@@ -646,7 +646,8 @@ class MMSWidget {
 
         void updateFromThemeClass(MMSWidgetClass *themeClass);
 
-    /* friends */
+    // friends
+    friend class MMSDialogManager;
     friend class MMSWindow;
     friend class MMSHBoxWidget;
     friend class MMSVBoxWidget;

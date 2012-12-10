@@ -1107,6 +1107,134 @@ string MMSDialogManager::getProgressBarValues(MMSTaffFile *tafff, MMSWidget *cur
 }
 
 
+bool MMSDialogManager::getMenuItems(MMSTaffFile *tafff, MMSMenuWidget *menu, MMSTheme *theme) {
+	bool haveItems = false;
+	bool returntag = true;
+
+	// iterate through children
+	while (1) {
+		bool eof;
+		int tid = tafff->getNextTag(eof);
+		if (eof) break;
+		if (tid < 0) {
+			if (returntag) break;
+			returntag = true;
+			continue;
+		}
+		else
+			returntag = false;
+
+		// check if a <menuitem/> is given
+        if (tid == MMSGUI_TAGTABLE_TAG_MENUITEM) {
+			// new menu item
+        	MMSWidget *item = NULL;
+            haveItems = true;
+
+			if (tafff->hasAttributes()) {
+				// menu item has attributes, so we assume that the new item should be created with item template style
+				// create new menu item
+				item = menu->newItem();
+
+				// here we must loop for n widgets
+				vector<string> wgs;
+				bool wg_break = false;
+				while (!wg_break) {
+					wg_break = true;
+					startTAFFScan_WITHOUT_ID
+					{
+						if (memcmp(attrname, "widget.", 7)==0) {
+							// search for attributes which are to be set for menu items child widgets
+							string widgetName = &attrname[7];
+							int pos = (int)widgetName.find(".");
+							if (pos > 0) {
+								// widget name found
+								widgetName = widgetName.substr(0, pos);
+
+								// check if i have already processed this widget
+								if(find(wgs.begin(), wgs.end(), widgetName) != wgs.end()) {
+									widgetName = "";
+									continue;
+								}
+								wg_break = false;
+								wgs.push_back(widgetName);
+
+								// okay, searching for the widget within the new item
+								MMSWidget *widget;
+								if (item->getName() == widgetName) {
+									widget = item;
+								}else {
+									widget = item->findWidget(widgetName);
+								}
+
+								updateTAFFAttributes(tafff, widget, widgetName);
+							}
+						}
+					}
+					endTAFFScan_WITHOUT_ID
+				}
+
+				startTAFFScan_WITHOUT_ID
+				{
+					if (memcmp(attrname, "childwindow", 11)==0) {
+						// there is a child window given which represents a sub menu
+						menu->setSubMenuName(menu->getSize()-1, attrval_str);
+					}
+					else
+					if (memcmp(attrname, "goback", 6)==0) {
+						// if true, this item should be the go-back-item
+						//! if the user enters this item, the parent menu (if does exist) will be shown
+						if (memcmp(attrval_str, "true", 4)==0)
+							menu->setBackItem(menu->getSize()-1);
+					}
+				}
+				endTAFFScan_WITHOUT_ID
+
+				startTAFFScan
+				{
+					switch (attrid) {
+					case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_name:
+						if (*attrval_str)
+							item->setName(attrval_str);
+						break;
+					}
+				}
+				endTAFFScan
+			}
+			else {
+				// menu item has NO attributes, so we try to read a specific item style from the <menuitem/> children
+				// checking for tags within <menuitem/>
+				MMSHBoxWidget *tmpWidget = new MMSHBoxWidget(NULL);
+
+				// parse the childs from dialog file
+				throughDoc(tafff, tmpWidget, NULL, theme);
+				returntag = true;
+
+				// here we create a new menu item based on disconnected child (if != NULL) or item template style
+				item = menu->newItem(-1, tmpWidget->disconnectChild());
+
+				// delete the temporary container
+				delete tmpWidget;
+			}
+        }
+        else {
+        	// any other widgets given in the menu
+        	printf("Warning: Tag <%s/> is not supported within <menu/>.\n", tafff->getCurrentTagName());
+
+        	// we need a temporary widget
+            MMSHBoxWidget *tmpWidget = new MMSHBoxWidget(NULL);
+
+            // parse the childs from dialog file
+        	throughDoc(tafff, tmpWidget, NULL, theme);
+        	returntag = true;
+
+        	// delete the widget, we cannot use it
+            delete tmpWidget;
+        }
+	}
+
+	return haveItems;
+}
+
 string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWidget, MMSWindow *rootWindow, MMSTheme *theme) {
     MMSMenuWidgetClass    themeClass;
     MMSMenuWidget   *menu;
@@ -1151,7 +1279,7 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
     // are there any childs stored in the theme?
     if ((tf = menu->getTAFF())) {
         // yes, parse the childs from theme
-        throughDoc(tf, tmpWidget, NULL, theme);
+        throughDoc(tf, tmpWidget, NULL, theme, true);
     }
     else {
         // no, parse the childs from dialog file
@@ -1167,7 +1295,7 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
     else {
         if (tf) {
             // try with theme failed, retry with childs from dialog file
-            throughDoc(tafff, tmpWidget, NULL, theme);
+            throughDoc(tafff, tmpWidget, NULL, theme, true);
             MMSWidget *itemTemplate = tmpWidget->disconnectChild();
             if (itemTemplate) {
                 menu->setItemTemplate(itemTemplate);
@@ -1179,134 +1307,20 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
     delete tmpWidget;
 
     if (haveItemTemplate) {
-        // have a template - search for menu items which are set in the dialog file
-        bool haveItems = false;
-        bool returntag = true;
+		// have a template
+		bool haveItems;
 
-        // iterate through childs
-    	while (1) {
-    		bool eof;
-    		int tid = tafff->getNextTag(eof);
-    		if (eof) break;
-    		if (tid < 0) {
-    			if (returntag) break;
-    			returntag = true;
-    			continue;
-    		}
-    		else
-    			returntag = false;
+    	// searching for menu items which are set in the THEME file
+		haveItems = getMenuItems(tf, menu, theme);
 
-    		// check if a <menuitem/> is given
-            if (tid == MMSGUI_TAGTABLE_TAG_MENUITEM)
-            {
-				// new menu item
-            	MMSWidget *item = NULL;
-	            haveItems = true;
+    	// searching for menu items which are set in the DIALOG file
+		if (getMenuItems(tafff, menu, theme)) {
+			haveItems = true;
+		}
 
-				if (tafff->hasAttributes()) {
-					// menu item has attributes, so we assume that the new item should be created with item template style
-					// create new menu item
-					item = menu->newItem();
-
-					// here we must loop for n widgets
-					vector<string> wgs;
-					bool wg_break = false;
-					while (!wg_break) {
-						wg_break = true;
-						startTAFFScan_WITHOUT_ID
-						{
-							if (memcmp(attrname, "widget.", 7)==0) {
-								// search for attributes which are to be set for menu items child widgets
-								string widgetName = &attrname[7];
-								int pos = (int)widgetName.find(".");
-								if (pos > 0) {
-									// widget name found
-									widgetName = widgetName.substr(0, pos);
-
-									// check if i have already processed this widget
-									if(find(wgs.begin(), wgs.end(), widgetName) != wgs.end()) {
-										widgetName = "";
-										continue;
-									}
-									wg_break = false;
-									wgs.push_back(widgetName);
-
-									// okay, searching for the widget within the new item
-									MMSWidget *widget;
-									if (item->getName() == widgetName) {
-										widget = item;
-									}else {
-										widget = item->findWidget(widgetName);
-									}
-
-									updateTAFFAttributes(tafff, widget, widgetName);
-								}
-							}
-						}
-						endTAFFScan_WITHOUT_ID
-					}
-
-					startTAFFScan_WITHOUT_ID
-					{
-						if (memcmp(attrname, "childwindow", 11)==0) {
-							// there is a child window given which represents a sub menu
-							menu->setSubMenuName(menu->getSize()-1, attrval_str);
-						}
-						else
-						if (memcmp(attrname, "goback", 6)==0) {
-							// if true, this item should be the go-back-item
-							//! if the user enters this item, the parent menu (if does exist) will be shown
-							if (memcmp(attrval_str, "true", 4)==0)
-								menu->setBackItem(menu->getSize()-1);
-						}
-					}
-					endTAFFScan_WITHOUT_ID
-
-					startTAFFScan
-					{
-						switch (attrid) {
-						case MMSGUI_BASE_ATTR::MMSGUI_BASE_ATTR_IDS_name:
-							if (*attrval_str)
-								item->setName(attrval_str);
-							break;
-						}
-					}
-					endTAFFScan
-				}
-				else {
-					// menu item has NO attributes, so we try to read a specific item style from the <menuitem/> children
-					// checking for tags within <menuitem/>
-					MMSHBoxWidget *tmpWidget = new MMSHBoxWidget(NULL);
-
-					// parse the childs from dialog file
-					throughDoc(tafff, tmpWidget, NULL, theme);
-					returntag = true;
-
-					// here we create a new menu item based on disconnected child (if != NULL) or item template style
-					item = menu->newItem(-1, tmpWidget->disconnectChild());
-
-					// delete the temporary container
-					delete tmpWidget;
-				}
-            }
-            else {
-            	// any other widgets given in the menu
-            	printf("Warning: Tag <%s/> is not supported within <menu/>.\n", tafff->getCurrentTagName());
-
-            	// we need a temporary widget
-                MMSHBoxWidget *tmpWidget = new MMSHBoxWidget(NULL);
-
-                // parse the childs from dialog file
-            	throughDoc(tafff, tmpWidget, NULL, theme);
-            	returntag = true;
-
-            	// delete the widget, we cannot use it
-                delete tmpWidget;
-            }
-    	}
-
-        if (haveItems)
+        if (haveItems) {
             menu->setFocus(false, false);
+        }
     }
 
     // return the name of the widget
@@ -1684,3 +1698,51 @@ void MMSDialogManager::updateTAFFAttributes(MMSTaffFile *tafff, MMSWidget *widge
     }
 }
 
+
+MMSWidget *MMSDialogManager::createWidgetFromTemplate(string className, MMSWidget *parentWidget, MMSWindow *rootWindow, MMSTheme *theme) {
+
+	// prepare input
+	if (!parentWidget) return NULL;
+	if (!rootWindow) rootWindow = this->rootWindow;
+	if (!theme) theme = globalTheme;
+
+	// find template class
+	MMSTemplateClass *tc = theme->getTemplateClass(className);
+	if (!tc) return NULL;
+
+	// get TAFF buffer from template
+	MMSTaffFile *tf = tc->getTAFF();
+	if (!tf) return NULL;
+
+	// we need a temporary parent widget
+	MMSHBoxWidget *tmpWidget = new MMSHBoxWidget(NULL);
+
+	// parse the childs from theme
+	throughDoc(tf, tmpWidget, NULL, theme, true);
+
+	// get real template tree
+	MMSWidget *tmp = tmpWidget->disconnectChild();
+	delete tmpWidget;
+
+	if (!tmp) return NULL;
+
+	// init widget
+	tmp->setParent(parentWidget);
+	tmp->setRootWindow(rootWindow);
+
+	// return widget
+	// note: the widget is NOT added to parent widget!!!
+	return tmp;
+}
+
+
+MMSWidget *MMSDialogManager::addWidgetFromTemplate(string className, MMSWidget *parentWidget, MMSWindow *rootWindow, MMSTheme *theme) {
+
+	MMSWidget *widget = createWidgetFromTemplate(className, parentWidget, rootWindow, theme);
+
+	if (widget) {
+		parentWidget->add(widget);
+	}
+
+	return widget;
+}
