@@ -283,12 +283,14 @@ bool MMSFBDevOmap::initLayer(int layer_id, int width, int height, MMSFBSurfacePi
 		return false;
 
 	case 1:
+#if 0
 		// Video layer (VID)
 		if   (pixelformat != MMSFB_PF_I420) {
 			printf("MMSFBDevOmap: Video Layer %d needs pixelformat I420 (==YUV420) but %s given\n",
 						layer_id, getMMSFBPixelFormatString(pixelformat).c_str());
 			return false;
 		}
+#endif
 
 		// enable VID
 		if (this->vid.fbdev->initLayer(0, width, height, pixelformat, backbuffer)) {
