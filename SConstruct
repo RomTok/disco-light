@@ -568,8 +568,8 @@ if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv or 'cppcheck' 
 			conf.env['CCFLAGS'].extend(['-D__HAVE_GLES2__'])
 			if conf.CheckLibWithHeader(['EGL'], 'EGL/egl.h', 'c++', 'return eglGetError();'):
 				conf.env['CCFLAGS'].extend(['-D__HAVE_EGL__'])
-			if conf.CheckLibWithHeader(['GLU'],  'GL/glu.h', 'c++', 'gluNewTess();'):
-				conf.env['CCFLAGS'].extend(['-D__HAVE_GLU__'])					
+#			if conf.CheckLibWithHeader(['GLU'],  'GL/glu.h', 'c++', 'gluNewTess();'):
+#				conf.env['CCFLAGS'].extend(['-D__HAVE_GLU__'])
 		else:
 			conf.env['graphics_outputtype'].remove('gles2')
 
@@ -590,8 +590,8 @@ if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv or 'cppcheck' 
 					conf.env['LIBS'].append('GLEW')
 					if conf.CheckLib('GL', 'glBlendEquation'):
 						conf.env['CCFLAGS'].extend(['-D__HAVE_GL2__'])	
-					if conf.checkSimpleLib(['glu'], 'GL/glu.h'):
-						conf.env['CCFLAGS'].extend(['-D__HAVE_GLU__'])					
+#					if conf.checkSimpleLib(['glu'], 'GL/glu.h'):
+#						conf.env['CCFLAGS'].extend(['-D__HAVE_GLU__'])
 					if conf.CheckCXXHeader('GL/glx.h') and conf.CheckLib('GL', 'glXCreateContext'):
 						conf.env['CCFLAGS'].extend(['-D__HAVE_GLX__'])
 		else:
@@ -770,7 +770,10 @@ if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv or 'cppcheck' 
 #######################################################################
 # TODO: handle disko_pc_libs                                          #
 if 'install' in BUILD_TARGETS:
-	disko_pc = open('disko.pc', 'w')
+	if env['static_lib']:
+		disko_pc = open('disko-static.pc', 'w')
+	else:
+		disko_pc = open('disko.pc', 'w')
 	disko_pc_requires = 'libxml-2.0 >= 2.6, sigc++-2.0, freetype2'
 	if (env['enable_curl']):
 		disko_pc_requires += ', libcurl'
@@ -793,16 +796,10 @@ if 'install' in BUILD_TARGETS:
 		disko_pc_requires += ', libpng >= 1.2'
 
 	if 'jpeg' in env['images']:
-		if(env['static_lib']):
-			disko_pc_libs += ' -ljpeg'
-		else:
-			disko_pc_libs_private += ' -ljpeg'
+		disko_pc_libs += ' -ljpeg'
 
 	if 'tiff' in env['images']:
-		if(env['static_lib']):
-			disko_pc_libs += ' -ltiff'
-		else:
-			disko_pc_libs_private += ' -ltiff'
+		disko_pc_libs += ' -ltiff'
 
 	if env.has_key('libdl'):
 		disko_pc_libs_private += ' -ldl'
@@ -910,8 +907,12 @@ env.Default(all)
 env.Install(idir_inc, env['TOP_DIR'] + '/inc/mms.h')
 env.Install(idir_inc, env['TOP_DIR'] + '/inc/disko.h')
 env.Install(idir_inc, env['TOP_DIR'] + '/inc/diskoversion.h')
-env.Install(idir_prefix + '/lib/pkgconfig', 'disko.pc')
-Clean('lib', 'disko.pc')
+if env['static_lib']:
+	env.Install(idir_prefix + '/lib/pkgconfig', 'disko-static.pc')
+	Clean('lib', 'disko-static.pc')
+else:
+	env.Install(idir_prefix + '/lib/pkgconfig', 'disko.pc')
+	Clean('lib', 'disko.pc')
 
 #######################################################################
 # Documentation                                                       #
