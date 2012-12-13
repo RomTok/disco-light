@@ -50,7 +50,7 @@ class MMSCanvasWidget : public MMSWidget {
         bool init();
         bool release();
         bool draw(bool *backgroundFilled = NULL);
-  //      void handleInput(MMSInputEvent *inputevent);
+        void handleInput(MMSInputEvent *inputevent);
 
     protected:
         typedef map<string, string> ATTRIBUTE_MAP;
@@ -75,7 +75,7 @@ class MMSCanvasWidget : public MMSWidget {
         virtual bool initFunc() { return false; };
         virtual bool releaseFunc() { return false; };
         virtual bool copyFunc(MMSWidget *wid) { return false; };
-//        virtual bool handleInputFunc(MMSInputEvent *inputevent) { return false; };
+        virtual bool handleInputFunc(MMSInputEvent *inputevent) { return false; };
 
         MMSWidget *copyWidget();
 

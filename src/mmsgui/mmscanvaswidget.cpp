@@ -98,9 +98,13 @@ bool MMSCanvasWidget::draw(bool *backgroundFilled) {
 
 	canvasSurface = this->surface;
 
+	this->surface->lock();
+
 	if (MMSWidget::draw(backgroundFilled)) {
     	drawingFunc(this->surface, this->surfaceGeom, backgroundFilled);
     }
+
+	this->surface->unlock();
 
 	/* draw widgets debug frame */
 	return MMSWidget::drawDebug();
@@ -130,11 +134,11 @@ bool MMSCanvasWidget::checkRefreshStatus() {
 	return true;
 }
 
-/*void MMSCanvasWidget::handleInput(MMSInputEvent *inputevent) {
+void MMSCanvasWidget::handleInput(MMSInputEvent *inputevent) {
 	if(!handleInputFunc(inputevent))
 		throw MMSWidgetError(1,"input not handled");
 }
-*/
+
 void MMSCanvasWidget::setAttributes(string attr) {
 	std::stringstream ss(attr);
 	std::string item, item2;
