@@ -1310,8 +1310,10 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
 		// have a template
 		bool haveItems;
 
-    	// searching for menu items which are set in the THEME file
-		haveItems = getMenuItems(tf, menu, theme);
+		if (tf) {
+			// searching for menu items which are set in the THEME file
+			haveItems = getMenuItems(tf, menu, theme);
+		}
 
     	// searching for menu items which are set in the DIALOG file
 		if (getMenuItems(tafff, menu, theme)) {
