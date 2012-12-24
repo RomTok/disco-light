@@ -437,9 +437,7 @@ void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled, MMSF
                 	wgeom.x-=scrolling_offset;
             }
 			this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(brightness, 255, opacity);
-			selimage->lock();
 			this->surface->stretchBlit(selimage, NULL, &wgeom);
-			selimage->unlock();
 		}
 	}
 
@@ -2614,7 +2612,7 @@ bool MMSMenuWidget::scrollTo(int posx, int posy, bool refresh, bool *changed, MM
 				break;
 			case MMSWIDGET_SCROLL_MODE_SETSELECTED | MMSWIDGET_SCROLL_MODE_RMPRESSED:
 				// that's the right menu item, scroll smooth to the position
-				this->children.at(i)->setPressed(false, false);
+				this->children.at(i)->setPressed(false, refresh);
 				setSelected(i, refresh, changed, false);
 				break;
 			case MMSWIDGET_SCROLL_MODE_SETPRESSED:
@@ -2714,7 +2712,7 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
         // refresh is required
     	enableRefresh();
 
-    	if (this->isVisible()) this->refresh();
+        this->refresh();
     }
 
     // unlock me
