@@ -220,7 +220,7 @@ class MMSPulser : public MMSThread {
 
         //! Set maximum CPU usage.
         /*!
-        \param max_cpu_usage 10..100 percent, default is 75%
+        \param max_cpu_usage 10..100 percent, default is 100%
         \return true, if parameter is accepted
         \see getMaxCPUUsage()
         */
