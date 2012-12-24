@@ -483,11 +483,14 @@ bool MMSFBWindow::resize(int w, int h) {
 
 bool MMSFBWindow::raiseToTop(int zlevel) {
 
-    /* check if initialized */
+    // check if initialized
     INITCHECK;
 
-    /* raise to top of the window stack */
-    mmsfbwindowmanager->raiseToTop(this, zlevel);
+    // save opacity
+    this->config.zlevel = zlevel;
+
+    // raise to top of the window stack
+    mmsfbwindowmanager->raiseToTop(this);
 
     return true;
 }
@@ -496,6 +499,9 @@ bool MMSFBWindow::lowerToBottom() {
 
     /* check if initialized */
     INITCHECK;
+
+    // save opacity
+    this->config.zlevel = 1000;
 
     /* lower to bottom of the window stack */
     mmsfbwindowmanager->lowerToBottom(this);
