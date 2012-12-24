@@ -730,12 +730,18 @@ bool MMSFBGL::init() {
 		Window surface, i.e. it will be visible on screen. The list
 		has to contain key/value pairs, terminated with EGL_NONE.
 	 */
-	EGLint pi32ConfigAttribs[5];
+	EGLint pi32ConfigAttribs[11];
 	pi32ConfigAttribs[0] = EGL_SURFACE_TYPE;
 	pi32ConfigAttribs[1] = EGL_WINDOW_BIT;
 	pi32ConfigAttribs[2] = EGL_RENDERABLE_TYPE;
 	pi32ConfigAttribs[3] = EGL_OPENGL_ES2_BIT;
-	pi32ConfigAttribs[4] = EGL_NONE;
+	pi32ConfigAttribs[4] = EGL_RED_SIZE;
+	pi32ConfigAttribs[5] = 8;
+	pi32ConfigAttribs[6] = EGL_GREEN_SIZE;
+	pi32ConfigAttribs[7] = 8;
+	pi32ConfigAttribs[8] = EGL_BLUE_SIZE;
+	pi32ConfigAttribs[9] = 8;
+	pi32ConfigAttribs[10] = EGL_NONE;
 
 	/*
 		Step 5 - Find a config that matches all requirements.
@@ -771,6 +777,7 @@ bool MMSFBGL::init() {
 		   GET_ATTR(EGL_NATIVE_RENDERABLE, "EGL_NATIVE_RENDERABLE");
 		   GET_ATTR(EGL_NATIVE_VISUAL_ID, "EGL_NATIVE_VISUAL_ID");
 		   GET_ATTR(EGL_NATIVE_VISUAL_TYPE, "EGL_NATIVE_VISUAL_TYPE");
+		   //GET_ATTR(EGL_PRESERVED_RESOURCES, "EGL_PRESERVED_RESOURCES"); not all gles2 implementations have this
 		   GET_ATTR(EGL_SAMPLES, "EGL_SAMPLES");
 		   GET_ATTR(EGL_SAMPLE_BUFFERS, "EGL_SAMPLE_BUFFERS");
 		   GET_ATTR(EGL_SURFACE_TYPE, "EGL_SURFACE_TYPE");
@@ -1007,8 +1014,8 @@ bool MMSFBGL::bindBuffer(GLenum target, GLuint bo) {
 
 			// flush all queued commands to the OpenGL server
 			// but do NOT wait until all queued commands are finished by the OpenGL server
-//			glFlush();
-//			ERROR_CHECK_BOOL("glFlush()");
+//bad performance on MALI			glFlush();
+//bad performance on MALI			ERROR_CHECK_BOOL("glFlush()");
 //printf("this->bound_vbo = %d\n",this->bound_vbo);
 
 			// activate buffer
@@ -1023,8 +1030,8 @@ bool MMSFBGL::bindBuffer(GLenum target, GLuint bo) {
 
 			// flush all queued commands to the OpenGL server
 			// but do NOT wait until all queued commands are finished by the OpenGL server
-//			glFlush();
-//			ERROR_CHECK_BOOL("glFlush()");
+//bad performance on MALI			glFlush();
+//bad performance on MALI			ERROR_CHECK_BOOL("glFlush()");
 
 			// activate buffer
 			glBindBuffer(target, this->bound_ibo);
@@ -1196,8 +1203,8 @@ bool MMSFBGL::bindTexture2D(GLuint tex) {
 	if (tex) {
 		// flush all queued commands to the OpenGL server
 		// but do NOT wait until all queued commands are finished by the OpenGL server
-//		glFlush();
-//		ERROR_CHECK_BOOL("glFlush()");
+//bad performance on MALI		glFlush();
+//bad performance on MALI		ERROR_CHECK_BOOL("glFlush()");
 
 		// activate texture
 		glBindTexture(GL_TEXTURE_2D, tex);
