@@ -150,7 +150,7 @@ vector <MMSPropertyData *> MMSPluginPropertyDAO::findAllPluginPropertiesByPlugin
 		else
 	        pluginProperty->setMax(0);
         if(!rs["MIN"].empty())
-        	pluginProperty->setMin(atoi(rs["Min"].c_str()));
+        	pluginProperty->setMin(atoi(rs["MIN"].c_str()));
         else
         	pluginProperty->setMin(0);
 
