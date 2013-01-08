@@ -427,8 +427,10 @@ bool MMSFBWindowManager::lowerToBottom(MMSFBWindow *window) {
 
                             PRINT_LOCK("flipSurface");
                             /* draw the window */
+                            vw.surface->lock();
                             flipSurface(vw.surface, NULL, true);
                             PRINT_LOCK("end flipSurface");
+                            vw.surface->unlock();
                         }
                     }
             }
@@ -537,8 +539,10 @@ bool MMSFBWindowManager::showWindow(MMSFBWindow *window, bool locked, bool refre
 
             // draw the window
             PRINT_LOCK("flipSurface");
+            vw.surface->lock();
             flipSurface(vw.surface, NULL, true, refresh);
 			PRINT_LOCK("end flipSurface");
+			vw.surface->unlock();
 
             // unlock
             if (!locked)

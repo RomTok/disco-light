@@ -2714,7 +2714,7 @@ MMSWidget *MMSMenuWidget::newItem(int item, MMSWidget *widget) {
         // refresh is required
     	enableRefresh();
 
-        this->refresh();
+    	if (this->isVisible()) this->refresh();
     }
 
     // unlock me
