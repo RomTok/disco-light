@@ -439,7 +439,7 @@ void MMSMenuWidget::drawchildren(bool toRedrawOnly, bool *backgroundFilled, MMSF
 			this->surface->setBlittingFlagsByBrightnessAlphaAndOpacity(brightness, 255, opacity);
 			this->selimage->lock();
 			this->surface->stretchBlit(selimage, NULL, &wgeom);
-			this->selimage->ulock();
+			this->selimage->unlock();
 		}
 	}
 
