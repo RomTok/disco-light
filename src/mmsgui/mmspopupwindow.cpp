@@ -64,6 +64,8 @@ bool MMSPopupWindow::create(string className, string dx, string dy, string w, st
     if (duration)
         setDuration(duration);
 
+	setFocusable(true);
+
     // create single shot timer
 	this->timer = new MMSTimer(true);
 	this->timeOut_connection = this->timer->timeOut.connect(sigc::mem_fun(this, &MMSPopupWindow::timeOut));
