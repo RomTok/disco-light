@@ -84,7 +84,7 @@ def PathIsDirCreateNone(key, value, env):
 #######################################################################
 # Command line options                                                #
 #######################################################################
-be = ['dfb', 'fbdev', 'x11']
+be = ['dfb', 'fbdev', 'x11', 'kms']
 ot = ['stdfb', 'matroxfb', 'viafb', 'omapfb', 'davincifb', 'xshm', 'xvshm', 'gl2', 'gles2']
 pf = ['argb', 'airgb', 'argb4444', 'argb3565', 'rgb16', 'rgb24', 'rgb32', 'bgr24', 'bgr555', 'ayuv', 'yv12', 'i420', 'yuy2']
 
@@ -279,11 +279,12 @@ def checkOptions(context):
 		print '  \'scons graphics_backend=dfb\'   or'
 		print '  \'scons graphics_backend=fbdev\' or'
 		print '  \'scons graphics_backend=x11\'   or'
+		print '  \'scons graphics_backend=kms\'   or'
 		print '  \'scons graphics_backend=all\'\n'
 		Exit(1)
 
 	checkOutputtypes(['x11'],   ['xshm', 'xvshm', 'gl2'])
-	checkOutputtypes(['fbdev'], ['gles2'])
+	checkOutputtypes(['fbdev', 'kms'], ['gles2'])
 	checkOutputtypes(['dfb'],   ['viafb'])
 	checkOutputtypes(['fbdev', 'dfb'], ['stdfb', 'matroxfb', 'davincifb', 'omapfb'])
 	
@@ -561,6 +562,12 @@ if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv or 'cppcheck' 
 	if('fbdev' in env['graphics_backend']):
 		conf.env['CCFLAGS'].extend(['-D__HAVE_FBDEV__'])
 
+	# checks required if building kms backend
+	if('kms' in env['graphics_backend']):
+		conf.checkSimpleLib(['libdrm'], 'drm/drm.h')
+		conf.checkSimpleLib(['gbm'],    'gbm/gbm.h')
+		conf.env['CCFLAGS'].extend(['-D__HAVE_KMS__'])
+
 	# checks for building OpenGL ES 2.0 backend
 	if('gles2' in env['graphics_outputtype']):
 		if conf.CheckLibWithHeader(['GLESv2'], 'GLES2/gl2.h', 'c++', 'glGenFramebuffers(0,(GLuint*)0);'):
@@ -813,6 +820,9 @@ if 'install' in BUILD_TARGETS:
 			disko_pc_requires += ', xv'
 		if '-D__HAVE_OPENGL__' in env['CCFLAGS']:
 			disko_pc_requires += ', gl, glu'
+
+	if 'kms' in env['graphics_backend']:
+		disko_pc_requires += ', libdrm, gbm'
 	
 	for l in ['GLEW', 'GLESv2' , 'EGL']:
 		if l in env['LIBS']:
