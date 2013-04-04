@@ -57,6 +57,22 @@
 #define MMSKMS_MAX_MODES	128
 #define MMSKMS_MAX_LAYERS	32
 
+typedef struct {
+	struct gbm_device *dev;
+	struct gbm_surface *surface;
+} GBM;
+
+typedef struct {
+	int fd;
+	drmModeModeInfo *mode;
+	unsigned int crtc_id;
+	unsigned int connector_id;
+} DRM;
+
+typedef struct {
+	struct gbm_bo *bo;
+	unsigned int fb_id;
+} DRM_FB;
 
 class MMSKms {
     private:
@@ -118,31 +134,20 @@ class MMSKms {
         //! id of the active screen (this is for fbs != vesa)
         int active_screen;
 
-        static struct {
-			struct gbm_device *dev;
-			struct gbm_surface *surface;
-        } gbm;
-
-        static struct {
-			int fd;
-			drmModeModeInfo *mode;
-			unsigned int crtc_id;
-			unsigned int connector_id;
-        } drm;
-
-        struct drm_fb {
-			struct gbm_bo *bo;
-			unsigned int fb_id;
-        };
-
     	struct gbm_bo *bo;
-    	struct drm_fb *fb;
+    	DRM 	drm;
+    	GBM		gbm;
+    	DRM_FB *fb;
 
 //        void printFixScreenInfo();
 //        void printVarScreenInfo();
 //        bool buildPixelFormat();
 //
 //        bool readModes();
+
+		bool init_drm();
+		bool init_gbm();
+		DRM_FB* drm_fb_get_from_bo(struct gbm_bo *bo);
 
         void genFBPixelFormat(MMSFBSurfacePixelFormat pf, unsigned int *nonstd_format, MMSFBPixelDef *pixeldef);
         void disable(int fd, string device_file);

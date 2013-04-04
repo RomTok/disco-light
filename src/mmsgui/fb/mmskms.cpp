@@ -47,6 +47,8 @@
 
 #define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSKms is not initialized");return false;}
 
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+
 MMSKms::MMSKms() {
 	// init fb vals
 	this->isinitialized = false;
@@ -179,6 +181,49 @@ bool MMSKms::init_gbm()
 	}
 
 	return true;
+}
+
+static void
+drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
+{
+	DRM_FB *fb = (DRM_FB*)data;
+	struct gbm_device *gbm = gbm_bo_get_device(bo);
+	if(gbm) {
+		int fd = gbm_device_get_fd(gbm);
+		if (fb->fb_id)
+			drmModeRmFB(fd, fb->fb_id);
+	}
+
+	free(fb);
+}
+
+DRM_FB* MMSKms::drm_fb_get_from_bo(struct gbm_bo *bo)
+{
+	DRM_FB *fb = (DRM_FB*)gbm_bo_get_user_data(bo);
+	uint32_t width, height, stride, handle;
+	int ret;
+
+	if (fb)
+		return fb;
+
+	fb = (DRM_FB*)calloc(1, sizeof *fb);
+	fb->bo = bo;
+
+	width = gbm_bo_get_width(bo);
+	height = gbm_bo_get_height(bo);
+	stride = gbm_bo_get_stride(bo);
+	handle = gbm_bo_get_handle(bo).u32;
+
+	ret = drmModeAddFB(drm.fd, width, height, 24, 32, stride, handle, &fb->fb_id);
+	if (ret) {
+		printf("failed to create fb: %s\n", strerror(errno));
+		free(fb);
+		return NULL;
+	}
+
+	gbm_bo_set_user_data(bo, fb, drm_fb_destroy_callback);
+
+	return fb;
 }
 
 bool MMSKms::openDevice() {
@@ -578,7 +623,7 @@ bool MMSKms::setMode(int width, int height, MMSFBSurfacePixelFormat pixelformat,
 
 	if (width <= 0 || height <= 0) {
 		// have to disable the framebuffer
-		disable(this->drm.fd, this->device_file);
+		//disable(this->drm.fd, this->device_file);
 		return true;
 	}
 
