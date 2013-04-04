@@ -123,6 +123,27 @@ MMSFBLayer::MMSFBLayer(int id, MMSFBBackend backend, MMSFBOutputType outputtype)
         }
 #endif
     }
+    if (this->config.backend == MMSFB_BE_KMS) {
+#ifdef __HAVE_KMS__
+        if (mmsfb->mmskms) {
+			// test layer initialization
+			if (!mmsfb->mmskms->testLayer(this->config.id)) {
+				MMSFB_SetError(0, "init test of layer " + iToStr(this->config.id) + " failed!");
+				return;
+			}
+
+			if (this->config.outputtype == MMSFB_OT_OGL) {
+				// check layer 0
+				if (this->config.id != 0) {
+					MMSFB_SetError(0, "OPENGL support needs layer 0!");
+					return;
+				}
+			}
+
+			this->initialized = true;
+        }
+#endif
+    }
     else
 	if (this->config.backend == MMSFB_BE_X11) {
 #ifdef __HAVE_XLIB__
@@ -533,6 +554,55 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 
     	// mark this surface as a layer surface
 		this->mmsfbdev_surface->setLayerSurface();
+
+	    if (this->config.outputtype == MMSFB_OT_OGL) {
+#ifdef __HAVE_OPENGL__
+#ifdef __HAVE_EGL__
+	    	// initialize the backend interface server
+	    	mmsfb->bei->init();
+#endif
+#endif
+	    }
+
+		// get configuration
+		this->config.avail = false;
+		if (!getConfiguration()) {
+			printf("getconfiguration failed!");
+			return false;
+		}
+
+
+		// set special config
+		this->config.window_pixelformat = window_pixelformat;
+		this->config.surface_pixelformat = surface_pixelformat;
+
+
+		return true;
+#endif
+    }
+    else
+    if (this->config.backend == MMSFB_BE_KMS) {
+#ifdef __HAVE_KMS__
+        if (!mmsfb->mmskms)
+        	return false;
+
+        // initializing layer
+		if (!mmsfb->mmskms->initLayer(this->config.id, w, h, pixelformat,
+			(buffermode == MMSFB_BM_BACKVIDEO)?1:(buffermode == MMSFB_BM_TRIPLE)?2:0)) {
+			MMSFB_SetError(0, "init layer " + iToStr(this->config.id) + " failed!");
+			return false;
+		}
+
+		// get fb memory ptr
+		MMSFBSurfacePlanesBuffer buffers;
+		memset(&buffers, 0, sizeof(buffers));
+		if (!mmsfb->mmskms->getFrameBufferPtr(this->config.id, buffers, &this->config.w, &this->config.h)) {
+			MMSFB_SetError(0, "getFrameBufferPtr() failed");
+			return false;
+		}
+		mmsfb->mmskms->getPixelFormat(this->config.id, &this->config.pixelformat);
+		this->config.buffermode = buffermode;
+		this->config.options = MMSFB_LO_NONE;
 
 	    if (this->config.outputtype == MMSFB_OT_OGL) {
 #ifdef __HAVE_OPENGL__
@@ -1405,6 +1475,21 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface, bool clear) {
 #endif
     }
     else
+    if (this->config.backend == MMSFB_BE_KMS) {
+#ifdef __HAVE_KMS__
+    	if (this->config.outputtype == MMSFB_OT_OGL) {
+#ifdef __HAVE_OPENGL__
+    		// create a new surface instance
+    		*surface = new MMSFBSurface(this->config.w, this->config.h, MMSFBSurfaceAllocatedBy_ogl);
+    		if (!*surface) {
+    			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface for OPENGL");
+    			return false;
+    		}
+#endif
+        }
+#endif
+    }
+    else
 	if (this->config.backend == MMSFB_BE_X11) {
 #ifdef __HAVE_XLIB__
     	if (this->config.outputtype == MMSFB_OT_OGL) {
@@ -1511,6 +1596,12 @@ bool MMSFBLayer::releaseLayer() {
         	return mmsfb->mmsfbdev->releaseLayer(this->config.id);
         }
 #endif
+    } else if (this->config.backend == MMSFB_BE_KMS) {
+#ifdef __HAVE_KMS__
+        if (mmsfb->mmskms) {
+        	return mmsfb->mmskms->releaseLayer(this->config.id);
+        }
+#endif
     }
 
     return false;
@@ -1525,6 +1616,12 @@ bool MMSFBLayer::restoreLayer() {
 #ifdef __HAVE_FBDEV__
         if (mmsfb->mmsfbdev) {
         	return mmsfb->mmsfbdev->restoreLayer(this->config.id);
+        }
+#endif
+    } else if (this->config.backend == MMSFB_BE_KMS) {
+#ifdef __HAVE_KMS__
+        if (mmsfb->mmskms) {
+        	return mmsfb->mmskms->restoreLayer(this->config.id);
         }
 #endif
     }

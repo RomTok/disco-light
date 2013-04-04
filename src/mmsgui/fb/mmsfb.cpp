@@ -66,6 +66,10 @@ MMSFB::MMSFB() {
 #ifdef  __HAVE_FBDEV__
 	this->mmsfbdev = NULL;
 #endif
+#ifdef  __HAVE_KMS__
+	this->mmskms = NULL;
+#endif
+
 #ifdef __HAVE_XLIB__
 	this->x_display = NULL;
 #endif
@@ -140,6 +144,14 @@ bool MMSFB::init(int argc, char **argv, MMSFBBackend backend, MMSFBRectangle x11
 #ifdef __HAVE_FBDEV__
 #else
 		MMSFB_SetError(0, "compile FBDEV support!");
+		return false;
+#endif
+	}
+    else
+	if (this->backend == MMSFB_BE_KMS) {
+#ifdef __HAVE_KMS__
+#else
+		MMSFB_SetError(0, "compile KMS support!");
 		return false;
 #endif
 	}
@@ -219,6 +231,15 @@ bool MMSFB::release() {
     	}
 #endif
     }
+    else
+    if (this->backend == MMSFB_BE_KMS) {
+#ifdef __HAVE_KMS__
+    	if (this->mmskms) {
+    		delete this->mmskms;
+    		this->mmskms = NULL;
+    	}
+#endif
+    }
     else {
 #ifdef __HAVE_XLIB__
 #endif
@@ -287,7 +308,7 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype, boo
 		}
     }
     else
-	if (this->backend == MMSFB_BE_FBDEV) {
+	if ((this->backend == MMSFB_BE_FBDEV) || (this->backend == MMSFB_BE_KMS)) {
 		if (outputtype == MMSFB_OT_OGL) {
 #ifdef __HAVE_OPENGL__
 #else
@@ -301,8 +322,6 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype, boo
 #endif
 		}
 	}
-
-
 
 
     if (this->backend == MMSFB_BE_FBDEV) {
@@ -340,6 +359,22 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype, boo
 #endif
     }
 
+    if (this->backend == MMSFB_BE_KMS) {
+    #ifdef __HAVE_KMS__
+        	if (!this->mmskms) {
+				// default kms
+				DEBUGMSG("MMSGUI", "create generic kms");
+				this->mmskms = new MMSKms();
+
+    			if (this->mmskms) {
+    				if (!this->mmskms->openDevice() {
+    					MMSFB_SetError(0, "MMSKms device cannot be opened");
+    					return false;
+    				}
+    			}
+        	}
+    #endif
+        }
 
 
 
@@ -401,6 +436,11 @@ void *MMSFB::getX11Window() {
 #ifdef  __HAVE_FBDEV__
 #endif
 	}
+    else
+	if (this->backend == MMSFB_BE_KMS) {
+#ifdef  __HAVE_KMS__
+#endif
+	}
     else {
 #ifdef __HAVE_XLIB__
 
@@ -418,6 +458,11 @@ void *MMSFB::getX11Display() {
     else
 	if (this->backend == MMSFB_BE_FBDEV) {
 #ifdef  __HAVE_FBDEV__
+#endif
+	}
+    else
+	if (this->backend == MMSFB_BE_KMS) {
+#ifdef  __HAVE_KMS__
 #endif
 	}
     else {
@@ -439,6 +484,11 @@ bool MMSFB::refresh() {
     else
 	if (this->backend == MMSFB_BE_FBDEV) {
 #ifdef  __HAVE_FBDEV__
+#endif
+	}
+    else
+	if (this->backend == MMSFB_BE_KMS) {
+#ifdef  __HAVE_KMS__
 #endif
 	}
     else {

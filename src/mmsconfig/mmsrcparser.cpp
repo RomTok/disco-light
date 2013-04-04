@@ -358,6 +358,17 @@ void MMSRcParser::check_outputtype(MMSFBOutputType outputtype, xmlChar *parname,
 			break;
 		}
 	}
+	else
+	if (this->graphics.backend == MMSFB_BE_KMS) {
+		switch (outputtype) {
+		case MMSFB_OT_OGL:
+			// okay
+			break;
+		default:
+			WRONG_VALUE(parname, val, MMSFB_OT_VALID_VALUES_BE_KMS, "-> this depends on backend=\"KMS\"");
+			break;
+		}
+	}
 }
 
 
@@ -1003,8 +1014,21 @@ void MMSRcParser::throughGraphics(xmlNode* node, THROUGH_GRAPHICS_MODE mode) {
 			}
 		}
 	}
+	else
+	if (this->graphics.backend == MMSFB_BE_KMS) {
+		switch (this->graphics.graphicslayer.outputtype) {
+		case MMSFB_OT_OGL:
+			if (this->graphics.graphicslayer.pixelformat != MMSFB_PF_RGB32 && this->graphics.graphicslayer.pixelformat != MMSFB_PF_ARGB
+					 && this->graphics.graphicslayer.pixelformat != MMSFB_PF_ABGR)
+				WRONG_VALUE("graphicslayer.pixelformat", getMMSFBPixelFormatString(this->graphics.graphicslayer.pixelformat), MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OGL, "-> this depends on backend=\"FBDEV\", outputtype=\"OGL\"");
+			break;
 
-	if ((this->graphics.backend == MMSFB_BE_X11)||(this->graphics.backend == MMSFB_BE_FBDEV)) {
+		default:
+			break;
+		}
+	}
+
+	if ((this->graphics.backend == MMSFB_BE_X11)||(this->graphics.backend == MMSFB_BE_FBDEV)||(this->graphics.backend == MMSFB_BE_KMS)) {
 		// overwite values needed for this backends
 		this->graphics.extendedaccel = true;
 		this->graphics.allocmethod = "MALLOC";

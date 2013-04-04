@@ -37,6 +37,7 @@
 #include "mmstools/mmslogger.h"
 
 #include "mmsgui/fb/mmsfbdev.h"
+#include "mmsgui/fb/mmskms.h"
 #include "mmsgui/fb/mmsfbdevmatrox.h"
 #include "mmsgui/fb/mmsfbdevdavinci.h"
 #include "mmsgui/fb/mmsfbdevomap.h"
@@ -81,6 +82,11 @@ class MMSFB {
 #ifdef  __HAVE_FBDEV__
         // interface to own FB device
         MMSFBDev		*mmsfbdev;
+#endif
+
+#ifdef  __HAVE_KMS__
+        // interface to own FB device
+        MMSKms			*mmskms;
 #endif
 
 #ifdef __HAVE_XLIB__

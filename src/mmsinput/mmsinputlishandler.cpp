@@ -40,7 +40,7 @@
 #include <linux/input.h>
 
 
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
 MMSInputLISHandler::MMSInputLISHandler(MMS_INPUT_DEVICE device) :
 	devcnt(0),
 	ie_count(0),
@@ -59,7 +59,7 @@ MMSInputLISHandler::MMSInputLISHandler(MMS_INPUT_DEVICE device) :
 }
 #else
 MMSInputLISHandler::MMSInputLISHandler(MMS_INPUT_DEVICE device) {
-	throw MMSError(0,(string)typeid(this).name() + " is empty. compile FBDEV support!");
+	throw MMSError(0,(string)typeid(this).name() + " is empty. compile FBDEV or KMS support!");
 }
 #endif
 
@@ -214,7 +214,7 @@ bool MMSInputLISHandler::addEvent(MMSInputEvent *inputevent) {
 }
 
 void MMSInputLISHandler::grabEvents(MMSInputEvent *inputevent) {
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
 	// block if buffer is empty
 	while(this->ie_count == 0) {
 		usleep(10000);
@@ -231,7 +231,7 @@ void MMSInputLISHandler::grabEvents(MMSInputEvent *inputevent) {
 	if (this->ie_read_pos >= MMSINPUTLISHANDLER_EVENT_BUFFER_SIZE)
 		this->ie_read_pos = 0;
 #else
-	throw MMSError(0,(string)typeid(this).name() + " is empty. compile FBDEV support!");
+	throw MMSError(0,(string)typeid(this).name() + " is empty. compile FBDEV or KMS support!");
 #endif
 }
 

@@ -172,7 +172,9 @@ typedef enum {
 	//! X11 backend from disko framework
 	MMSFB_BE_X11,
 	//! FBDEV backend from disko framework
-	MMSFB_BE_FBDEV
+	MMSFB_BE_FBDEV,
+	//! KMS backend from disko framework
+	MMSFB_BE_KMS
 } MMSFBBackend;
 
 //! backend: none
@@ -183,9 +185,11 @@ typedef enum {
 #define MMSFB_BE_X11_STR		"X11"
 //! backend: FBDEV
 #define MMSFB_BE_FBDEV_STR		"FBDEV"
+//! backend: KMS
+#define MMSFB_BE_KMS_STR		"KMS"
 
 //! list of valid backend types
-#define MMSFB_BE_VALID_VALUES	"DFB, X11, FBDEV"
+#define MMSFB_BE_VALID_VALUES	"DFB, X11, FBDEV, KMS"
 
 //! list of valid backend types for output types MMSFB_OT_xxxFB
 #define MMSFB_BE_VALID_VALUES_OT_FB	"DFB, FBDEV"
@@ -259,6 +263,9 @@ typedef enum {
 
 //! list of valid output types for backend MMSFB_BE_FBDEV
 #define MMSFB_OT_VALID_VALUES_BE_FBDEV	"STDFB, MATROXFB, DAVINCIFB, OMAPFB, OGL"
+
+//! list of valid output types for backend MMSFB_BE_KMS
+#define MMSFB_OT_VALID_VALUES_BE_KMS	"OGL"
 
 // conversion routines for output types
 string getMMSFBOutputTypeString(MMSFBOutputType ot);
@@ -472,6 +479,9 @@ typedef enum {
 
 //! list of valid pixelformats for FBDEV.OGL
 #define MMSFB_PF_VALID_VALUES_BE_FBDEV_OT_OGL	"RGB32, ARGB, ABGR"
+
+//! list of valid pixelformats for KMS.OGL
+#define MMSFB_PF_VALID_VALUES_BE_KMS_OT_OGL	"RGB32, ARGB, ABGR"
 
 //! list of valid pixelformats used for layer surfaces
 #define MMSFB_PF_VALID_BUFFERMODES "BACKVIDEO BACKSYSTEM FRONTONLY TRIPLE WINDOWS"
