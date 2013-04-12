@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -212,6 +212,9 @@ bool MMSArrowWidget::draw(bool *backgroundFilled) {
                                     surfaceGeom.x,                                              surfaceGeom.y,
                                     surfaceGeom.x + surfaceGeom.w - 1 + (surfaceGeom.w % 2 - 1),surfaceGeom.y);
                     break;
+                default:
+                	// TODO: handle MMSDIRECTION_UP_LEFT, ...
+                	break;
             }
         }
 

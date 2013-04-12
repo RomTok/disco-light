@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -256,7 +256,7 @@ int MMS3DPolygonMesh::findPMItem(MMS3DPM_TYPE type, MMS3DPM_MESHID identifier, i
 
 		if (item->type != type)
 				continue;
-		if (memcmp(item->identifier, identifier, sizeof(identifier)))
+		if (memcmp(item->identifier, identifier, 8 * sizeof(float)))
 				continue;
 		if (vertices && item->vertices < 0)
 				continue;
@@ -289,7 +289,7 @@ int MMS3DPolygonMesh::newPMItem(MMS3DPM_TYPE type, MMS3DPM_MESHID identifier, in
 	MMS3DPM_ITEM *item = &this->pm_items[this->pm_items_cnt];
 	this->pm_items_cnt++;
 	item->type = type;
-	memcpy(item->identifier, identifier, sizeof(identifier));
+	memcpy(item->identifier, identifier, 8 * sizeof(float));
 
 	// get new indices for the new item
 	if (vertices) {
@@ -358,6 +358,8 @@ int MMS3DPolygonMesh::newPMItem(MMS3DPM_TYPE type, MMS3DPM_MESHID identifier, in
 					(texcoords)? this->varrays[*texcoords]: NULL,
 					(indices)  ? this->iarrays[*indices]  : NULL);
 		break;
+	case MMS3DPM_TYPE_PRIMITIVES:
+		break;
 	}
 
 	return this->pm_items_cnt - 1;
@@ -375,7 +377,7 @@ int MMS3DPolygonMesh::newPMItem(MMS3DPM_TYPE type, MMS3DPM_MESHID identifier,
 	MMS3DPM_ITEM *item = &this->pm_items[this->pm_items_cnt];
 	this->pm_items_cnt++;
 	item->type = type;
-	memcpy(item->identifier, identifier, sizeof(identifier));
+	memcpy(item->identifier, identifier, 8 * sizeof(float));
 
 	// get new indices for the new item
 	if (vertices) {

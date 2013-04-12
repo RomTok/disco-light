@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -273,7 +273,7 @@ bool MMSFBWindowManager::raiseToTop(MMSFBWindow *window) {
             // reload windows config
             loadWindowConfig(window, &(this->vwins.at(oldpos)));
             VISIBLE_WINDOWS vw = this->vwins.at(oldpos);
-            int newpos = oldpos;
+            unsigned int newpos = oldpos;
 
             if (oldpos > 0) {
             	// check zlevel against lower windows
@@ -1571,8 +1571,6 @@ bool MMSFBWindowManager::loadPointer() {
 			    	int 		img_pitch = 0;
 			    	int 		img_size  = 0;
 			    	MMSTAFF_PF 	img_pixelformat = MMSTAFF_PF_ARGB;
-			    	bool 		img_premultiplied = true;
-			    	int 		img_mirror_size = 0;
 
 			    	while ((attrid=tafff->getNextAttribute(&value_str, &value_int, NULL))>=0) {
 			    		switch (attrid) {
@@ -1594,11 +1592,7 @@ bool MMSFBWindowManager::loadPointer() {
 			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_pixelformat:
 			    			img_pixelformat = (MMSTAFF_PF)value_int;
 			    			break;
-			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_premultiplied:
-			    			img_premultiplied = (value_int);
-			    			break;
-			    		case MMSTAFF_IMAGE_RAWIMAGE_ATTR::MMSTAFF_IMAGE_RAWIMAGE_ATTR_IDS_mirror_size:
-			    			img_mirror_size = value_int;
+			    		default:
 			    			break;
 			    		}
 			    	}

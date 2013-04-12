@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -7028,7 +7028,7 @@ MMSFBSurface *MMSFBSurface::getSubSurface(MMSFBRectangle *rect) {
     MMSFBSurface 	*surface;
 
     // check if initialized
-    INITCHECK;
+    if((!mmsfb->isInitialized())||(!this->initialized)){MMSFB_SetError(0,"MMSFBSurface is not initialized");return NULL;}
 
 	// finalize previous clear
 	finClear();
@@ -7404,7 +7404,7 @@ bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,
 	// check the properties of the existing surface
 	if (*cs) {
 		// check if old surface has the same dimension
-		int w, h;
+		int w = 0, h = 0;
         (*cs)->getSize(&w, &h);
         if ((w != width) || (h != height)) {
         	delete *cs;
@@ -7414,7 +7414,7 @@ bool mmsfb_create_cached_surface(MMSFBSurface **cs, int width, int height,
 
 	if (*cs) {
 		// check if old surface has the same pixelformat
-		MMSFBSurfacePixelFormat pf;
+		MMSFBSurfacePixelFormat pf = MMSFB_PF_NONE;
         (*cs)->getPixelFormat(&pf);
         if (pf != pixelformat) {
         	delete *cs;

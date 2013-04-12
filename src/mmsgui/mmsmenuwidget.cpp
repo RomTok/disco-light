@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -1710,8 +1710,8 @@ bool MMSMenuWidget::scrollDownEx(unsigned int count, bool refresh, bool test, bo
             this->py = this->y;
 
 	        // get access to widgets
-	        MMSWidget *olditem = (oldy    < children.size()) ? children.at(oldy)    : NULL;
-	        MMSWidget *item    = (this->y < children.size()) ? children.at(this->y) : NULL;
+	        MMSWidget *olditem = (oldy    < (int)children.size()) ? children.at(oldy)    : NULL;
+	        MMSWidget *item    = (this->y < (int)children.size()) ? children.at(this->y) : NULL;
 
             // switch focus and recalculate children
             selectItem(olditem, false, false);
@@ -1893,8 +1893,8 @@ bool MMSMenuWidget::scrollUpEx(unsigned int count, bool refresh, bool test, bool
             this->py = this->y;
 
 	        // get access to widgets
-	        MMSWidget *olditem = (oldy    < children.size()) ? children.at(oldy)    : NULL;
-	        MMSWidget *item    = (this->y < children.size()) ? children.at(this->y) : NULL;
+	        MMSWidget *olditem = (oldy    < (int)children.size()) ? children.at(oldy)    : NULL;
+	        MMSWidget *item    = (this->y < (int)children.size()) ? children.at(this->y) : NULL;
 
             // switch focus and recalculate children
             selectItem(olditem, false, false);
@@ -2142,8 +2142,8 @@ bool MMSMenuWidget::scrollRightEx(unsigned int count, bool refresh, bool test, b
             this->px = this->x;
 
 	        // get access to widgets
-	        MMSWidget *olditem = (oldx    < children.size()) ? children.at(oldx)    : NULL;
-	        MMSWidget *item    = (this->x < children.size()) ? children.at(this->x) : NULL;
+	        MMSWidget *olditem = (oldx    < (int)children.size()) ? children.at(oldx)    : NULL;
+	        MMSWidget *item    = (this->x < (int)children.size()) ? children.at(this->x) : NULL;
 
             if ((smooth_scrolling)&&(refresh)) {
             	// reset the blend value
@@ -2353,8 +2353,8 @@ bool MMSMenuWidget::scrollLeftEx(unsigned int count, bool refresh, bool test, bo
             this->px = this->x;
 
 	        // get access to widgets
-	        MMSWidget *olditem = (oldx    < children.size()) ? children.at(oldx)    : NULL;
-	        MMSWidget *item    = (this->x < children.size()) ? children.at(this->x) : NULL;
+	        MMSWidget *olditem = (oldx    < (int)children.size()) ? children.at(oldx)    : NULL;
+	        MMSWidget *item    = (this->x < (int)children.size()) ? children.at(this->x) : NULL;
 
             if ((smooth_scrolling)&&(refresh)) {
             	/* reset the blend value */

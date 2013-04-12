@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -420,7 +420,7 @@ unsigned int MMSWindowManager::printStack(char *buffer) {
 		}
 
 		*ptr = 0;
-		printf(buffer);
+		printf("%s", buffer);
 		return (unsigned int)(ptr - buffer);
 	}
 	else {

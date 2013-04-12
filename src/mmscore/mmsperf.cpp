@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -202,6 +202,8 @@ int MMSPerf::getPerfVals(MMSFBPERF_MEASURING_LIST *mlist, const char *prefix, ch
 
 int MMSPerf::getPerfVals(MMSFBPERF_MEASURING_LIST_VKEY *mlist, char *retbuf, int retbuf_size,
 						   MMSFBPERF_MEASURING_VALS_VKEY *summary) {
+/* MAH: this doesn't work at all for now */
+#if 0
 	char *retbuf_start=retbuf;
 	char *retbuf_end = retbuf + retbuf_size;
 
@@ -265,6 +267,9 @@ int MMSPerf::getPerfVals(MMSFBPERF_MEASURING_LIST_VKEY *mlist, char *retbuf, int
 	}
 
 	return (int)(retbuf - retbuf_start);
+#else
+	return 0;
+#endif
 }
 
 void MMSPerf::stopMeasuring(struct timeval *perf_stime, MMSFBPERF_MEASURING_VALS *mvals,

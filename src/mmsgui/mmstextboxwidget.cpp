@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -337,12 +337,12 @@ bool MMSTextBoxWidget::calcWordGeom(string &text, unsigned int startWidth, unsig
         }
 
 		if (minWidth) {
-			if (*minWidth < mywordgeom->geom.x + mywordgeom->geom.w)
+			if (*minWidth < (unsigned int)(mywordgeom->geom.x + mywordgeom->geom.w))
 				*minWidth = mywordgeom->geom.x + mywordgeom->geom.w;
 		}
 
 		if (minHeight) {
-			if (*minHeight < mywordgeom->geom.y + mywordgeom->geom.h)
+			if (*minHeight < (unsigned int)(mywordgeom->geom.y + mywordgeom->geom.h))
 				*minHeight = mywordgeom->geom.y + mywordgeom->geom.h;
 		}
 
@@ -579,15 +579,15 @@ bool MMSTextBoxWidget::prepareText(int *width, int *height, bool recalc) {
 //				setSurfaceGeometry(realWidth, realHeight);
 
 
-				if (minWidth < getMinWidthPix())
+				if ((int)minWidth < getMinWidthPix())
 					minWidth = getMinWidthPix();
-				if (minHeight < getMinHeightPix())
+				if ((int)minHeight < getMinHeightPix())
 					minHeight = getMinHeightPix();
 
-				if (minWidth < maxWidth || minHeight < maxHeight) {
+				if ((int)minWidth < maxWidth || (int)minHeight < maxHeight) {
 					calcWordGeom(this->translated_text,
-									(minWidth < maxWidth) ? minWidth : maxWidth,
-									(minHeight < maxHeight) ? minHeight : maxHeight,
+									((int)minWidth < maxWidth) ? minWidth : maxWidth,
+									((int)minHeight < maxHeight) ? minHeight : maxHeight,
 									&realWidth, &realHeight, &scrollDX, &scrollDY,
 									&lines, &paragraphs, getWrap(), getSplitWords(),
 									(!this->swap_left_right) ? getAlignment() : swapAlignmentHorizontal(getAlignment()),
@@ -599,7 +599,7 @@ bool MMSTextBoxWidget::prepareText(int *width, int *height, bool recalc) {
 					if (realWidth < minWidth)
 						*width = minWidth;
 					else
-					if (realWidth > maxWidth)
+					if ((int)realWidth > maxWidth)
 						*width = maxWidth;
 					else
 						*width = realWidth;
@@ -611,7 +611,7 @@ bool MMSTextBoxWidget::prepareText(int *width, int *height, bool recalc) {
 					if (realHeight < minHeight)
 						*height = minHeight;
 					else
-					if (realHeight > maxHeight)
+					if ((int)realHeight > maxHeight)
 						*height = maxHeight;
 					else
 						*height = realHeight;

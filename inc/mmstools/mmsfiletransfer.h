@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -34,9 +34,10 @@
 #define MMSFILETRANSFER_H_
 #ifdef __HAVE_CURL__
 
+#include <string>
+
 using namespace std;
 
-#include <string>
 #include <sigc++/sigc++.h>
 
 extern "C" {

@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -186,7 +186,7 @@ void MMSVBoxWidget::recalculateChildren() {
 			if (sizehint == "") {
 				// calculate height based on remaining space
 				rect.h = safe_len;
-				if (i == last_spacer)
+				if ((int)i == last_spacer)
 					rect.h+= remain_pix % num_spacers;
 			}
 			else {

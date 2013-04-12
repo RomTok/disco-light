@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -33,11 +33,11 @@
 #ifndef IMMSMUSICMANAGER_H_
 #define IMMSMUSICMANAGER_H_
 
-using namespace std;
-
 #include <string>
 #include <vector>
 #include <sigc++/sigc++.h>
+
+using namespace std;
 
 typedef vector<string> PLAYLIST;
 
