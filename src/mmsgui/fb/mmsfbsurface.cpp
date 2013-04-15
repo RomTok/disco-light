@@ -531,7 +531,7 @@ void MMSFBSurface::init(MMSFBSurfaceAllocatedBy allocated_by,
 	this->mmsperf = new MMSPerf();
 #endif
 
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
 	this->fbdev_ts = NULL;
 #endif
 
@@ -630,7 +630,7 @@ void MMSFBSurface::createSurfaceBuffer() {
 	memset(sb->buffers, 0, sizeof(sb->buffers));
 	sb->numbuffers = 0;
 	sb->external_buffer = false;
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
 	sb->mmsfbdev_surface = NULL;
 #endif
 #ifdef __HAVE_XLIB__
@@ -5185,29 +5185,38 @@ bool MMSFBSurface::stretchBlitBuffer(void *src_ptr, int src_pitch, MMSFBSurfaceP
 
 
 void MMSFBSurface::processSwapDisplay(void *in_data, int in_data_len, void **out_data, int *out_data_len) {
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
 	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 
 	if (in_data_len >> 8) {
 		MMSFBPERF_START_MEASURING;
 
+#ifdef __HAVE_FBDEV__
 		// vsync
 		mmsfb->mmsfbdev->waitForVSync();
+#else
+//		mmsfb->mmskms->waitForVSync();
+#endif
 
 		MMSFBPERF_STOP_MEASURING_VSYNC(sb->mmsfbdev_surface);
 	}
 
 	MMSFBPERF_START_MEASURING;
 
+#ifdef __HAVE_FBDEV__
 	// swap display
 	mmsfb->mmsfbdev->panDisplay(in_data_len & 0xff, sb->buffers[0].ptr);
+#else
+	// swap display
+	mmsfb->mmskms->panDisplay(in_data_len & 0xff, sb->buffers[0].ptr);
+#endif
 
 	MMSFBPERF_STOP_MEASURING_SWAPDISPLAY(sb->mmsfbdev_surface);
 #endif
 }
 
 void MMSFBSurface::swapDisplay(bool vsync) {
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
 	MMSFBSurfaceBuffer *sb = this->config.surface_buffer;
 
 	if (sb->mmsfbdev_surface != this)
@@ -5237,16 +5246,24 @@ void MMSFBSurface::swapDisplay(bool vsync) {
 		if (vsync) {
 			MMSFBPERF_START_MEASURING;
 
+#ifdef __HAVE_FBDEV__
 			// vsync
 			mmsfb->mmsfbdev->waitForVSync();
+#else
+//			mmsfb->mmskms->waitForVSync();
+#endif
 
 			MMSFBPERF_STOP_MEASURING_VSYNC(sb->mmsfbdev_surface);
 		}
 
 		MMSFBPERF_START_MEASURING;
 
+#ifdef __HAVE_FBDEV__
 		// swap display
 		mmsfb->mmsfbdev->panDisplay(sb->currbuffer_read, sb->buffers[0].ptr);
+#else
+		mmsfb->mmskms->panDisplay(sb->currbuffer_read, sb->buffers[0].ptr);
+#endif
 
 		MMSFBPERF_STOP_MEASURING_SWAPDISPLAY(sb->mmsfbdev_surface);
 	}
@@ -5435,7 +5452,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 					if (sb->currbuffer_write >= sb->numbuffers)
 						sb->currbuffer_write = 0;
 
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
 					if (sb->mmsfbdev_surface == this) {
 						// surface is the fb layer surface, so we have to swap the display
 						swapDisplay(true);
@@ -5460,7 +5477,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 						if (sb->currbuffer_write >= sb->numbuffers)
 							sb->currbuffer_write = 0;
 
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
 						if (sb->mmsfbdev_surface == this) {
 							// surface is the fb layer surface, so we have to swap the display
 							swapDisplay(true);
@@ -5485,7 +5502,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 
 						this->config.blittingflags = savedbf;
 
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
 						if (sb->mmsfbdev_surface == this) {
 							// surface is the fb layer surface
 							// there is no need to swapDisplay() because current read buffer (currbuffer_read) has NOT changed
@@ -5539,15 +5556,19 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 			}
 		}
 
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
 		if (sb->mmsfbdev_surface) {
 			if (sb->mmsfbdev_surface != this) {
 				// this surface is the backbuffer in system memory of the layer (BACKSYSTEM buffer mode)
 
 				MMSFBPERF_START_MEASURING;
 
+#ifdef __HAVE_FBDEV__
 				// sync
 				mmsfb->mmsfbdev->waitForVSync();
+#else
+//				mmsfb->mmskms->waitForVSync();
+#endif
 
 				MMSFBPERF_STOP_MEASURING_VSYNC(sb->mmsfbdev_surface);
 
@@ -5830,7 +5851,7 @@ bool MMSFBSurface::flip(MMSFBRegion *region) {
 #endif
 #endif
 
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
 		}
 #endif
 

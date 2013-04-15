@@ -158,6 +158,11 @@ class MMSFB {
 
         void realignLayer();
 
+#ifdef  __HAVE_KMS__
+        // interface to own FB device
+        MMSKms	*getKmsInterface();
+#endif
+
     friend class MMSFBLayer;
     friend class MMSFBSurface;
     friend class MMSFBFont;

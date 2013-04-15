@@ -33,6 +33,7 @@
 #ifndef MMSFBGL_H_
 #define MMSFBGL_H_
 
+#include "mmsgui/fb/mmskms.h"
 #include "mmstools/mmstypes.h"
 #include <stack>
 
@@ -152,6 +153,14 @@ class MMSFBGL {
 
     	//! current matrix
     	MMSMatrix	current_matrix;
+
+    	//! use kms graphics system
+    	bool useKMS;
+
+#ifdef __HAVE_KMS__
+    	DRM		*drm;
+    	DRM_FB	*drm_fb;
+#endif
 
     	//! current color
     	unsigned char	current_color_r;

@@ -31,6 +31,7 @@
  **************************************************************************/
 
 #include "mmsgui/fb/mmsfbgl.h"
+#include "mmsgui/fb/mmsfb.h"
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -67,6 +68,14 @@ MMSFBGL::MMSFBGL() {
 	// no vertex/index buffer object is currently bound
 	this->bound_vbo = 0;
 	this->bound_ibo = 0;
+
+	this->useKMS = false;
+
+#ifdef __HAVE_KMS__
+	this->drm = NULL;
+	this->drm_fb = NULL;
+#endif
+
 }
 
 MMSFBGL::~MMSFBGL() {
@@ -670,6 +679,15 @@ bool MMSFBGL::init() {
 		return false;
 	}
 
+#ifdef __HAVE_KMS__
+	if (mmsfb->getKmsInterface()->isInitialized()) {
+		this->useKMS = true;
+		this->drm = mmsfb->getKmsInterface()->getDrm();
+		this->drm_fb = NULL;
+	}
+#endif
+
+
 #ifdef __HAVE_EGL__
 
 	printf("\nInitializing EGL:\n");
@@ -683,7 +701,13 @@ bool MMSFBGL::init() {
 		with, we let EGL pick the default display.
 		Querying other displays is platform specific.
 	*/
-	eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	if (this->useKMS) {
+#ifdef __HAVE_KMS__
+		eglDisplay = eglGetDisplay((EGLNativeDisplayType)this->drm->dev);
+#endif
+	} else {
+		eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	}
 	if (eglDisplay == EGL_NO_DISPLAY) {
 		printf("Error: eglGetDisplay() returned EGL_NO_DISPLAY.\n");
 		terminate();
@@ -730,18 +754,41 @@ bool MMSFBGL::init() {
 		Window surface, i.e. it will be visible on screen. The list
 		has to contain key/value pairs, terminated with EGL_NONE.
 	 */
-	EGLint pi32ConfigAttribs[11];
-	pi32ConfigAttribs[0] = EGL_SURFACE_TYPE;
-	pi32ConfigAttribs[1] = EGL_WINDOW_BIT;
-	pi32ConfigAttribs[2] = EGL_RENDERABLE_TYPE;
-	pi32ConfigAttribs[3] = EGL_OPENGL_ES2_BIT;
-	pi32ConfigAttribs[4] = EGL_RED_SIZE;
-	pi32ConfigAttribs[5] = 8;
-	pi32ConfigAttribs[6] = EGL_GREEN_SIZE;
-	pi32ConfigAttribs[7] = 8;
-	pi32ConfigAttribs[8] = EGL_BLUE_SIZE;
-	pi32ConfigAttribs[9] = 8;
-	pi32ConfigAttribs[10] = EGL_NONE;
+
+//	EGLint pi32ConfigAttribs[13];
+//	if (this->useKMS) {
+////		EGLint pi32ConfigAttribs[13];
+//		pi32ConfigAttribs[0] = EGL_SURFACE_TYPE;
+//		pi32ConfigAttribs[1] = EGL_WINDOW_BIT;
+//		pi32ConfigAttribs[2] = EGL_RENDERABLE_TYPE;
+//		pi32ConfigAttribs[3] = EGL_OPENGL_ES2_BIT;
+//		pi32ConfigAttribs[4] = EGL_RED_SIZE;
+//		pi32ConfigAttribs[5] = 1;
+//		pi32ConfigAttribs[6] = EGL_GREEN_SIZE;
+//		pi32ConfigAttribs[7] = 1;
+//		pi32ConfigAttribs[8] = EGL_BLUE_SIZE;
+//		pi32ConfigAttribs[9] = 1;
+//		pi32ConfigAttribs[10] = EGL_ALPHA_SIZE;
+//		pi32ConfigAttribs[11] = 0;
+//		pi32ConfigAttribs[12] = EGL_NONE;
+//
+//	} else {
+		EGLint pi32ConfigAttribs[11];
+		pi32ConfigAttribs[0] = EGL_SURFACE_TYPE;
+		pi32ConfigAttribs[1] = EGL_WINDOW_BIT;
+		pi32ConfigAttribs[2] = EGL_RENDERABLE_TYPE;
+		pi32ConfigAttribs[3] = EGL_OPENGL_ES2_BIT;
+		pi32ConfigAttribs[4] = EGL_RED_SIZE;
+		pi32ConfigAttribs[5] = 8;
+		pi32ConfigAttribs[6] = EGL_GREEN_SIZE;
+		pi32ConfigAttribs[7] = 8;
+		pi32ConfigAttribs[8] = EGL_BLUE_SIZE;
+		pi32ConfigAttribs[9] = 8;
+		pi32ConfigAttribs[10] = EGL_NONE;
+//		pi32ConfigAttribs[11] = EGL_NONE;
+//		pi32ConfigAttribs[12] = EGL_NONE;
+//	}
+
 
 	/*
 		Step 5 - Find a config that matches all requirements.
@@ -751,7 +798,13 @@ bool MMSFBGL::init() {
 		all criteria, so we can limit the number of configs returned to 1.
 	*/
 	int iConfigs;
-	if (!eglChooseConfig(eglDisplay, pi32ConfigAttribs, eglConfig, 10, &iConfigs) || (iConfigs < 1))
+	int config_size=0;
+	if (this->useKMS)
+		config_size=1;
+	else
+		config_size=10;
+
+	if (!eglChooseConfig(eglDisplay, pi32ConfigAttribs, eglConfig, config_size, &iConfigs) || (iConfigs < 1))
 	{
 		printf("Error: eglChooseConfig() failed.\n");
 		terminate();
@@ -809,7 +862,14 @@ bool MMSFBGL::init() {
 		Pixmaps and pbuffers are surfaces which only exist in off-screen
 		memory.
 	*/
-	eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig[0], (EGLNativeWindowType) NULL, NULL);
+	if (this->useKMS) {
+#ifdef __HAVE_KMS__
+		eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig[0], (EGLNativeWindowType) this->drm->surface, NULL);
+//		eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig[0], (EGLNativeWindowType) mmsfb->getKmsInterface()->getOmapBo(), NULL);
+#endif
+	} else {
+		eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig[0], (EGLNativeWindowType) NULL, NULL);
+	}
 
 	if (!getError("eglCreateWindowSurface"))
 	{
@@ -824,7 +884,10 @@ bool MMSFBGL::init() {
 		(or shared contexts).
 	*/
 	EGLint ai32ContextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
-	eglContext = eglCreateContext(eglDisplay, eglConfig[0], NULL, ai32ContextAttribs);
+	if (this->useKMS)
+		eglContext = eglCreateContext(eglDisplay, eglConfig[0], EGL_NO_CONTEXT, ai32ContextAttribs);
+	else
+		eglContext = eglCreateContext(eglDisplay, eglConfig[0], NULL, ai32ContextAttribs);
 	if (!getError("eglCreateContext"))
 	{
 		terminate();
@@ -916,7 +979,6 @@ bool MMSFBGL::terminate() {
 	return true;
 }
 
-
 bool MMSFBGL::getResolution(int *w, int *h) {
 
 	INITCHECK;
@@ -926,7 +988,6 @@ bool MMSFBGL::getResolution(int *w, int *h) {
 
 	return true;
 }
-
 
 bool MMSFBGL::swap() {
 
@@ -957,6 +1018,59 @@ sleep(1);*/
 
 	eglSwapBuffers(this->eglDisplay, this->eglSurface);
 	ERROR_CHECK_BOOL("eglSwapBuffers()");
+
+#ifdef __HAVE_KMS__
+	if (this->useKMS) {
+
+		mmsfb->getKmsInterface()->pageFlip();
+//		fd_set fds;
+//		FD_ZERO(&fds);
+//		FD_SET(0, &fds);
+//		FD_SET(this->drm->fd, &fds);
+//
+//		struct gbm_bo *bo;
+//		DRM_FB *fb;
+//		struct gbm_bo *next_bo;
+//		int waiting_for_flip = 1;
+//
+////		bo = gbm_surface_lock_front_buffer(this->gbm->surface);
+//		next_bo = gbm_surface_lock_front_buffer(this->gbm->surface);
+//		fb = (DRM_FB*)drm_fb_get_from_bo(next_bo);
+//
+//		int ret =0;
+//		ret = drmModeSetPlane(this->drm->fd, this->drm->plane_id, this->drm->crtc_id,
+//				fb->fb_id, 0, 0, 0, this->drm->mode->hdisplay, this->drm->mode->vdisplay,
+//				0, (this->drm->mode->vdisplay-576) << 16, 1024 << 16, 576 << 16);
+//
+//		if (ret)
+//			printf("drmModeSetPlane failed\n");
+//
+//		ret = 0;
+//		ret = drmModePageFlip(this->drm->fd, this->drm->crtc_id, fb->fb_id,	DRM_MODE_PAGE_FLIP_EVENT, &waiting_for_flip);
+//		if (ret) {
+//			printf("OPENGL_SWAP: failed to queue page flip\n");
+//			return false;
+//		}
+//
+//		while (waiting_for_flip) {
+//			ret = select(this->drm->fd + 1, &fds, NULL, NULL, NULL);
+//			if (ret < 0) {
+//				printf("OPENGL_SWAP: select err\n");
+//				return false;
+//			} else if (ret == 0) {
+//				printf("OPENGL_SWAP: select timeout!\n");
+//				return false;
+//			} else if (FD_ISSET(0, &fds)) {
+//				printf("OPENGL_SWAP: user interrupted!\n");
+//				break;
+//			}
+//			drmHandleEvent(this->drm->fd, &this->evctx);
+//		}
+//
+//		gbm_surface_release_buffer(this->gbm->surface, next_bo);
+////		bo = next_bo;
+	}
+#endif
 
 	return true;
 

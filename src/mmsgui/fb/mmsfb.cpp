@@ -367,7 +367,7 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype, boo
 				this->mmskms = new MMSKms();
 
     			if (this->mmskms) {
-    				if (!this->mmskms->openDevice()) {
+    				if (!this->mmskms->openDevice(outputtype)) {
     					MMSFB_SetError(0, "MMSKms device cannot be opened");
     					return false;
     				}
@@ -613,3 +613,9 @@ void MMSFB::realignLayer() {
 	}
 #endif
 }
+
+#ifdef  __HAVE_KMS__
+MMSKms *MMSFB::getKmsInterface() {
+	return this->mmskms;
+}
+#endif

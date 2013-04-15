@@ -42,24 +42,35 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/kd.h>
-//#include <linux/vt.h>
 #include "mmsgui/fb/mmskms.h"
+#include "mmsgui/fb/mmsfbconv.h"
+#include "mmsgui/fb/fb.h"
 
 #define INITCHECK  if(!this->isinitialized){MMSFB_SetError(0,"MMSKms is not initialized");return false;}
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
+static void page_flip_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec, void *data)
+{
+	int *waiting_for_flip = (int*)data;
+	*waiting_for_flip = 0;
+}
+
 MMSKms::MMSKms() {
 	// init fb vals
 	this->isinitialized = false;
+	this->framebuffer_base = NULL;
 	this->drm.fd = -1;
-//	this->framebuffer_base = NULL;
-//	this->reset_console_accel = false;
-//	memset(this->modes, 0, sizeof(this->modes));
-//	this->modes_cnt = 0;
 	memset(this->layers, 0, sizeof(this->layers));
 	this->layers_cnt = 0;
 	this->active_screen = 0;
+
+	if (MMSFBBase_rotate180) {
+		this->rotate180 = true;
+		MMSFBBase_rotate180 = false;
+	} else {
+		this->rotate180 = false;
+	}
 
 }
 
@@ -67,6 +78,98 @@ MMSKms::~MMSKms() {
 	closeDevice();
 }
 
+
+void MMSKms::dump_blob(uint32_t blob_id)
+{
+        uint32_t i;
+        unsigned char *blob_data;
+        drmModePropertyBlobPtr blob;
+
+        blob = drmModeGetPropertyBlob(this->drm.fd, blob_id);
+        if (!blob)
+                return;
+
+        blob_data = (unsigned char *)blob->data;
+
+        for (i = 0; i < blob->length; i++) {
+                if (i % 16 == 0)
+                        printf("\n\t\t\t");
+                printf("%.2hhx", blob_data[i]);
+        }
+        printf("\n");
+
+        drmModeFreePropertyBlob(blob);
+}
+
+
+void MMSKms::dump_prop(uint32_t prop_id, uint64_t value)
+{
+        int i;
+        drmModePropertyPtr prop;
+
+        prop = drmModeGetProperty(this->drm.fd, prop_id);
+
+        printf("\t%d", prop_id);
+        if (!prop) {
+                printf("\n");
+                return;
+        }
+
+        printf(" %s:\n", prop->name);
+
+        printf("\t\tflags:");
+        if (prop->flags & DRM_MODE_PROP_PENDING)
+                printf(" pending");
+        if (prop->flags & DRM_MODE_PROP_RANGE)
+                printf(" range");
+        if (prop->flags & DRM_MODE_PROP_IMMUTABLE)
+                printf(" immutable");
+        if (prop->flags & DRM_MODE_PROP_ENUM)
+                printf(" enum");
+        if (prop->flags & DRM_MODE_PROP_BITMASK)
+                printf(" bitmask");
+        if (prop->flags & DRM_MODE_PROP_BLOB)
+                printf(" blob");
+        printf("\n");
+
+        if (prop->flags & DRM_MODE_PROP_RANGE) {
+                printf("\t\tvalues:");
+                for (i = 0; i < prop->count_values; i++)
+                        printf(" %llu", prop->values[i]);
+                printf("\n");
+        }
+
+        if (prop->flags & DRM_MODE_PROP_ENUM) {
+                printf("\t\tenums:");
+                for (i = 0; i < prop->count_enums; i++)
+                        printf(" %s=%llu", prop->enums[i].name,
+                               prop->enums[i].value);
+                printf("\n");
+        } else if (prop->flags & DRM_MODE_PROP_BITMASK) {
+                printf("\t\tvalues:");
+                for (i = 0; i < prop->count_enums; i++)
+                        printf(" %s=0x%llx", prop->enums[i].name,
+                               (1LL << prop->enums[i].value));
+                printf("\n");
+        } else {
+        }
+
+        if (prop->flags & DRM_MODE_PROP_BLOB) {
+                printf("\t\tblobs:\n");
+                for (i = 0; i < prop->count_blobs; i++)
+                        dump_blob(prop->blob_ids[i]);
+                printf("\n");
+        } else {
+        }
+
+        printf("\t\tvalue:");
+        if (prop->flags & DRM_MODE_PROP_BLOB)
+                dump_blob(value);
+        else
+                printf(" %llu\n", value);
+
+        drmModeFreeProperty(prop);
+}
 
 bool MMSKms::init_drm()
 {
@@ -127,6 +230,7 @@ bool MMSKms::init_drm()
 	/* find highest resolution mode: */
 	for (i = 0, area = 0; i < connector->count_modes; i++) {
 		drmModeModeInfo *current_mode = &connector->modes[i];
+//		printf("curr mode h: %d, v: %d\n", current_mode->hdisplay, current_mode->vdisplay);
 		int current_area = current_mode->hdisplay * current_mode->vdisplay;
 
 		if (current_area > area) {
@@ -163,21 +267,120 @@ bool MMSKms::init_drm()
 	this->drm.crtc_id = encoder->crtc_id;
 	this->drm.connector_id = connector->connector_id;
 
+	if (this->rotate180) {
+		drmModeObjectSetProperty(this->drm.fd, encoder->crtc_id, DRM_MODE_OBJECT_CRTC, 8, 4);
+	}
+
+//	drmModeObjectPropertiesPtr tmp = drmModeObjectGetProperties(this->drm.fd, this->drm.crtc_id, DRM_MODE_OBJECT_CRTC);
+//
+//	if (tmp)
+//		printf("properties count: %d\n", tmp->count_props);
+//
+//	printf("  props:\n");
+//    int j = 0;
+//	if (tmp) {
+//			for (j = 0; j < tmp->count_props; j++)
+//					dump_prop(tmp->props[j],
+//							tmp->prop_values[j]);
+//			drmModeFreeObjectProperties(tmp);
+//	} else {
+//			printf("\tcould not get mode properties: %s\n",
+//				   strerror(errno));
+//	}
+
+//    drmModeObjectPropertiesPtr props;
+    drmModePlaneRes *plane_resources;
+    drmModePlane *ovr;
+
+	plane_resources = drmModeGetPlaneResources(this->drm.fd);
+	if (!plane_resources) {
+			fprintf(stderr, "drmModeGetPlaneResources failed: %s\n",
+					strerror(errno));
+			return false;
+	}
+
+//	printf("Planes:\n");
+//	printf("id\tcrtc\tfb\tCRTC x,y\tx,y\tgamma size\n");
+	for (i = 0; i < plane_resources->count_planes; i++) {
+			ovr = drmModeGetPlane(this->drm.fd, plane_resources->planes[i]);
+			if (!ovr) {
+					fprintf(stderr, "drmModeGetPlane failed: %s\n",
+							strerror(errno));
+					continue;
+			}
+
+//			printf("%d\t%d\t%d\t%d,%d\t\t%d,%d\t%d\n",
+//				   ovr->plane_id, ovr->crtc_id, ovr->fb_id,
+//				   ovr->crtc_x, ovr->crtc_y, ovr->x, ovr->y,
+//				   ovr->gamma_size);
+//
+//			if (!ovr->count_formats)
+//					continue;
+//
+//			printf("  formats:");
+//			for (j = 0; j < ovr->count_formats; j++)
+//					printf(" %4.4s", (char *)&ovr->formats[j]);
+//			printf("\n");
+//
+//			printf("  props:\n");
+//			props = drmModeObjectGetProperties(this->drm.fd, ovr->plane_id,
+//											   DRM_MODE_OBJECT_PLANE);
+//			if (props) {
+//					for (j = 0; j < props->count_props; j++)
+//							dump_prop(props->props[j],
+//									  props->prop_values[j]);
+//					drmModeFreeObjectProperties(props);
+//			} else {
+//					printf("\tcould not get plane properties: %s\n",
+//						   strerror(errno));
+//			}
+
+            if (ovr->possible_crtcs & this->drm.crtc_id){
+                    this->drm.plane_id = ovr->plane_id;
+                    break;
+            }
+
+//			drmModeFreePlane(ovr);
+	}
+//	printf("\n");
+
+
 	return true;
 }
 
 bool MMSKms::init_gbm()
 {
-	this->gbm.dev = gbm_create_device(this->drm.fd);
+	this->drm.dev = gbm_create_device(this->drm.fd);
 
-	this->gbm.surface = gbm_surface_create(this->gbm.dev, this->drm.mode->hdisplay, this->drm.mode->vdisplay,
-							GBM_FORMAT_XRGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
-
-	if (!gbm.surface) {
-		printf("failed to create gbm surface\n");
-        drmClose(this->drm.fd);
-        this->drm.fd = -1;
+	if (!init_omap()) {
+		printf("failed to initialize OMAP\n");
 		return false;
+	}
+
+//	this->bo = gbm_bo_import(this->drm.dev, GBM_BO_IMPORT_WL_BUFFER, this->framebuffer_base, GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+
+	//	this->drm.surface = (struct gbm_surface*) calloc(1, sizeof *this->drm.surface);
+	//
+	//	this->drm.surface->gbm_device = gbm_bo_get_device(this->bo);
+	//	this->drm.surface->width = 	gbm_bo_get_width(this->bo);
+	//	this->drm.surface->height = gbm_bo_get_height(this->bo);
+	//	this->drm.surface->format = gbm_bo_get_format(this->bo);
+	//	this->drm.surface->flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+
+	if (outputtype == MMSFB_OT_OGL) {
+		this->drm.surface = gbm_surface_create(this->drm.dev, this->drm.mode->hdisplay, this->drm.mode->vdisplay,
+							GBM_FORMAT_ARGB8888, GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+
+		if (!this->drm.surface) {
+			printf("failed to create gbm surface\n");
+	        drmClose(this->drm.fd);
+	        this->drm.fd = -1;
+			return false;
+		}
+
+		this->bo = gbm_surface_lock_front_buffer(this->drm.surface);
+		this->fb = (DRM_FB*)drm_fb_get_from_bo(this->bo);
+		gbm_surface_release_buffer(this->drm.surface, this->bo);
 	}
 
 	return true;
@@ -214,11 +417,32 @@ DRM_FB* MMSKms::drm_fb_get_from_bo(struct gbm_bo *bo)
 	stride = gbm_bo_get_stride(bo);
 	handle = gbm_bo_get_handle(bo).u32;
 
-	ret = drmModeAddFB(drm.fd, width, height, 24, 32, stride, handle, &fb->fb_id);
+	ret = drmModeAddFB(this->drm.fd, width, height, 24, 32, stride, handle, &fb->fb_id);
 	if (ret) {
 		printf("failed to create fb: %s\n", strerror(errno));
 		free(fb);
 		return NULL;
+	}
+
+	ret =0;
+	ret = drmModeSetCrtc(this->drm.fd, this->drm.crtc_id, fb->fb_id, 0, 0,
+						&this->drm.connector_id, 1, this->drm.mode);
+
+	if (ret) {
+		printf("failed to set mode: %s\n", strerror(errno));
+	}
+
+	if (this->rotate180) {
+		drmModeObjectSetProperty(this->drm.fd, this->drm.plane_id, DRM_MODE_OBJECT_PLANE, 8, 4);
+	}
+
+	if ((this->drm.width != this->drm.mode->hdisplay) || (this->drm.height != this->drm.mode->vdisplay)) {
+		ret = drmModeSetPlane(this->drm.fd, this->drm.plane_id, this->drm.crtc_id,
+				fb->fb_id, 0, 0, 0, this->drm.mode->hdisplay, this->drm.mode->vdisplay,
+				0, (this->drm.mode->vdisplay-this->drm.height) << 16, this->drm.width << 16, this->drm.height << 16);
+
+		if (ret)
+			printf("drmModeSetPlane failed\n");
 	}
 
 	gbm_bo_set_user_data(bo, fb, drm_fb_destroy_callback);
@@ -226,115 +450,76 @@ DRM_FB* MMSKms::drm_fb_get_from_bo(struct gbm_bo *bo)
 	return fb;
 }
 
-bool MMSKms::openDevice() {
-	// close the device if opened
-	closeDevice();
+bool MMSKms::init_omap()
+{
+	this->drm.o_dev = omap_device_new(this->drm.fd);
 
-//	fd_set fds;
+	if (!this->drm.dev) {
+		printf("ERROR:couldn't create omap device\n");
+		return false;
+	}
+
+	uint32_t bo_flags = OMAP_BO_TILED_32 | OMAP_BO_SCANOUT | OMAP_BO_WC;
+
+	if (bo_flags & OMAP_BO_TILED) {
+		this->o_bo = omap_bo_new_tiled(this->drm.o_dev, this->drm.mode->hdisplay, this->drm.mode->vdisplay, bo_flags);
+	} else {
+		this->o_bo = omap_bo_new(this->drm.o_dev, this->drm.mode->hdisplay * this->drm.mode->vdisplay * 32 / 8, bo_flags);
+	}
+
+	if (!this->o_bo) {
+		printf("failed to create omap bo\n");
+        drmClose(this->drm.fd);
+        this->drm.fd = -1;
+		return false;
+	}
+
+
+	uint32_t handle;
+	int ret;
+
+	this->fb = (DRM_FB*)calloc(1, sizeof *this->fb);
+
+	unsigned int alignedWidth;
+	alignedWidth = (this->drm.mode->hdisplay + (32 - 1)) & ~(32 - 1);
+	this->stride = ((alignedWidth * 32) + 7) / 8;
+	if (bo_flags & OMAP_BO_TILED)
+		this->stride = (stride + (4096 - 1)) & ~(4096 - 1);
+
+	handle = omap_bo_handle(this->o_bo);
+
+	ret = drmModeAddFB(this->drm.fd, this->drm.mode->hdisplay, this->drm.mode->vdisplay, 24, 32, this->stride, handle, &fb->fb_id);
+	if (ret) {
+		printf("failed to create fb: %s\n", strerror(errno));
+		free(this->fb);
+		return false;
+	}
+
+//	omap_bo_cpu_prep(this->o_bo, OMAP_GEM_WRITE);
+	this->framebuffer_base = omap_bo_map(this->o_bo);
+//	omap_bo_cpu_fini(this->o_bo, OMAP_GEM_WRITE);
+
+	return true;
+}
+
+bool MMSKms::openDevice(MMSFBOutputType outputtype) {
+	// close the device if opened
+	this->outputtype = outputtype;
+	closeDevice();
 
 	if (!init_drm()) {
 		printf("failed to initialize DRM\n");
 		return false;
 	}
 
-//	FD_ZERO(&fds);
-//	FD_SET(0, &fds);
-//	FD_SET(this->drm.fd, &fds);
-
 	if (!init_gbm()) {
 		printf("failed to initialize GBM\n");
 		return false;
 	}
 
-	this->bo = gbm_surface_lock_front_buffer(this->gbm.surface);
-	this->fb = drm_fb_get_from_bo(this->bo);
-
-//
-//    if (device_file) {
-//        // open given device
-//    	this->fd = open(device_file, O_RDWR);
-//        if (this->fd < 0) {
-//        	printf("MMSKms: opening device %s failed\n", device_file);
-//            return false;
-//        }
-//        this->device_file = device_file;
-//    }
-//    else {
-//        // open standard device
-//        this->fd = open("/dev/fb0", O_RDWR);
-//        if (this->fd < 0) {
-//            this->fd = open("/dev/fb/0", O_RDWR);
-//            if (this->fd < 0) {
-//            	printf("MMSKms: opening device /dev/fb0 and /dev/fb/0 failed\n");
-//                return false;
-//            }
-//            this->device_file = "/dev/fb/0";
-//        }
-//        else
-//            this->device_file = "/dev/fb0";
-//    }
-//
-//    // file descriptor should be closed when an exec function is invoked
-//    fcntl(this->fd, F_SETFD, FD_CLOEXEC);
-//
-//    // build device abbreviation
-//    memset(this->device, 0, sizeof(this->device));
-//    sprintf(this->device, "fb0");
-//    if (this->device_file.substr(0, 8) == "/dev/fb/")
-//        sprintf(this->device, "fb%s", this->device_file.substr(8, 5).c_str());
-//    else
-//    if (this->device_file.substr(0, 7) == "/dev/fb")
-//        sprintf(this->device, "fb%s", this->device_file.substr(7, 5).c_str());
-//
-//    // read video modes
-//    readModes();
-//	printf("MMSKms: %d modes loaded from /etc/fb.modes\n", this->modes_cnt);
-//
-//    // initialize virtual terminal
-//	if (console >= -1)
-//		if (!vtOpen(console)) {
-//			closeDevice();
-//			return false;
-//		}
-//
-//    // get fix screen infos
-//    if (ioctl(this->fd, FBIOGET_FSCREENINFO, &this->fix_screeninfo) < 0) {
-//    	printf("MMSKms: could not get fix screen infos from %s\n", this->device_file.c_str());
-//    	closeDevice();
-//        return false;
-//    }
-//    printFixScreenInfo();
-//
-//    // map framebuffer to memory (try shared, if it doesn't work, i.e. on non-mmu based machines, try private)
-//    if ((this->framebuffer_base=mmap(NULL, this->fix_screeninfo.smem_len,
-//                                     PROT_READ | PROT_WRITE, MAP_SHARED, this->fd, 0)) == MAP_FAILED) {
-//        if ((this->framebuffer_base=mmap(NULL, this->fix_screeninfo.smem_len,
-//                                         PROT_READ | PROT_WRITE, MAP_PRIVATE, this->fd, 0)) == MAP_FAILED) {
-//			printf("MMSKms: could not mmap framebuffer memory for %s\n", this->device_file.c_str());
-//			this->framebuffer_base = NULL;
-//			closeDevice();
-//			return false;
-//        }
-//    }
-//
-//    // get variable screen infos
-//    if (ioctl(this->fd, FBIOGET_VSCREENINFO, &this->org_var_screeninfo) < 0) {
-//    	printf("MMSKms: could not get var screen infos from %s\n", this->device_file.c_str());
-//    	closeDevice();
-//        return false;
-//    }
-//
-//    // disable console acceleration
-//    this->var_screeninfo = this->org_var_screeninfo;
-//    this->var_screeninfo.accel_flags = 0;
-//    if (ioctl(this->fd, FBIOPUT_VSCREENINFO, &this->var_screeninfo) < 0) {
-//    	printf("MMSKms: could not disable console acceleration for %s\n", this->device_file.c_str());
-//    	closeDevice();
-//        return false;
-//    }
-
-	// build the preset pixelformat
-//	buildPixelFormat();
+	memset(&this->evctx, 0, sizeof(this->evctx));
+	this->evctx.version = DRM_EVENT_CONTEXT_VERSION;
+	this->evctx.page_flip_handler = page_flip_handler;
 
     // all initialized :)
 	this->isinitialized = true;
@@ -344,18 +529,6 @@ bool MMSKms::openDevice() {
 
 void MMSKms::closeDevice() {
 
-//	// free resources if allocated
-//	if (this->reset_console_accel) {
-//	    // reset console acceleration
-//	    ioctl(this->fd, FBIOPUT_VSCREENINFO, &this->org_var_screeninfo);
-//		this->reset_console_accel = false;
-//	}
-//
-//	if (this->framebuffer_base) {
-//		munmap(this->framebuffer_base, this->fix_screeninfo.smem_len);
-//		this->framebuffer_base = NULL;
-//	}
-//
 	if (this->drm.fd != -1) {
         drmClose(this->drm.fd);
         this->drm.fd = -1;
@@ -363,8 +536,6 @@ void MMSKms::closeDevice() {
 
 	// reset all other
 	this->isinitialized = false;
-//	memset(this->modes, 0, sizeof(this->modes));
-//	this->modes_cnt = 0;
 	memset(this->layers, 0, sizeof(this->layers));
 	this->layers_cnt = 0;
 	this->active_screen = 0;
@@ -374,60 +545,48 @@ bool MMSKms::isInitialized() {
 	return this->isinitialized;
 }
 
-bool MMSKms::waitForVSync() {
-	// is initialized?
-	INITCHECK;
-
-//	// default fbdev does support only primary screen 0
-//	if (this->active_screen != 0) {
-//    	printf("MMSKms: screen %d is not supported\n", this->active_screen);
-//		return false;
-//	}
-//
-//	static const int s = 0;
-//	if (ioctl(this->fd, FBIO_WAITFORVSYNC, &s)) {
-//		// failed, well then???
-//	}
-
-	return true;
-}
-
 bool MMSKms::panDisplay(int buffer_id, void *framebuffer_base) {
 	// is initialized?
 	INITCHECK;
 
-//	// check framebuffer_base pointer
-//	if (framebuffer_base) {
-//		if (framebuffer_base != this->framebuffer_base) {
-//			printf("MMSKms: framebuffer base pointer not correct\n");
-//			return false;
-//		}
-//	}
-//
-//	// calc new y offset
-//	int yoffset = buffer_id * this->var_screeninfo.yres;
-//	if ((yoffset < 0) || (yoffset + this->var_screeninfo.yres > this->var_screeninfo.yres_virtual)) {
-//		return false;
-//	}
-//	int xoffset_save = this->var_screeninfo.xoffset;
-//	int yoffset_save = this->var_screeninfo.yoffset;
-//
-//	// set new x/y offsets
-//	this->var_screeninfo.xoffset = 0;
-//	this->var_screeninfo.yoffset = yoffset;
-//	if (this->fix_screeninfo.ypanstep)
-//		this->var_screeninfo.vmode &= ~FB_VMODE_YWRAP;
-//	else
-//		this->var_screeninfo.vmode |= FB_VMODE_YWRAP;
-//
-//	// switch display
-//	this->var_screeninfo.activate = FB_ACTIVATE_VBL;
-//	if (ioctl(this->fd, FBIOPAN_DISPLAY, &this->var_screeninfo) < 0) {
-//    	printf("MMSKms: display panning not supported\n");
-//		this->var_screeninfo.xoffset = xoffset_save;
-//		this->var_screeninfo.yoffset = yoffset_save;
-//		return false;
-//	}
+	// check framebuffer_base pointer
+	if (framebuffer_base) {
+		if (framebuffer_base != this->framebuffer_base) {
+			printf("MMSFBDev: framebuffer base pointer not correct\n");
+			return false;
+		}
+	}
+
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(0, &fds);
+	FD_SET(this->drm.fd, &fds);
+
+	int waiting_for_flip = 1;
+	int ret = 0;
+
+	printf("MMSKMS: page flip (pan display)\n");
+
+	ret = drmModePageFlip(this->drm.fd, this->drm.crtc_id, this->fb->fb_id,	DRM_MODE_PAGE_FLIP_EVENT, &waiting_for_flip);
+	if (ret) {
+		printf("OPENGL_SWAP: failed to queue page flip\n");
+		return false;
+	}
+
+	while (waiting_for_flip) {
+		ret = select(this->drm.fd + 1, &fds, NULL, NULL, NULL);
+		if (ret < 0) {
+			printf("OPENGL_SWAP: select err\n");
+			return false;
+		} else if (ret == 0) {
+			printf("OPENGL_SWAP: select timeout!\n");
+			return false;
+		} else if (FD_ISSET(0, &fds)) {
+			printf("OPENGL_SWAP: user interrupted!\n");
+			break;
+		}
+		drmHandleEvent(this->drm.fd, &this->evctx);
+	}
 
 	return true;
 }
@@ -449,14 +608,21 @@ bool MMSKms::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFor
 	// is initialized?
 	INITCHECK;
 
+//	printf("init layer w: %d, h: %d\n", width, height);
+
+	this->drm.width = width;
+	this->drm.height = height;
+
 	// default fbdev does support only primary layer 0 on primary screen 0
 	if (layer_id != 0) {
     	printf("MMSKms: layer %d is not supported\n", layer_id);
 		return false;
 	}
 
+	int ret =0;
+
 	/* set mode: */
-	int ret = 0;
+	ret = 0;
 	ret = drmModeSetCrtc(this->drm.fd, this->drm.crtc_id, this->fb->fb_id, 0, 0,
 						&this->drm.connector_id, 1, this->drm.mode);
 
@@ -465,9 +631,18 @@ bool MMSKms::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFor
 		return false;
 	}
 
-//	//switch video mode
-//	if (!setMode(width, height, pixelformat, backbuffer))
-//		return false;
+	if (this->rotate180) {
+		drmModeObjectSetProperty(this->drm.fd, this->drm.plane_id, DRM_MODE_OBJECT_PLANE, 8, 4);
+	}
+
+	if ((this->drm.width != this->drm.mode->hdisplay) || (this->drm.height != this->drm.mode->vdisplay)) {
+		ret = drmModeSetPlane(this->drm.fd, this->drm.plane_id, this->drm.crtc_id,
+				this->fb->fb_id, 0, 0, 0, this->drm.mode->hdisplay, this->drm.mode->vdisplay,
+				0, 0, this->drm.width << 16, this->drm.height << 16);
+
+		if (ret)
+			printf("drmModeSetPlane failed\n");
+	}
 
 	if (width <= 0 || height <= 0) {
 		// the layer is disabled now
@@ -482,25 +657,10 @@ bool MMSKms::initLayer(int layer_id, int width, int height, MMSFBSurfacePixelFor
 
 	// save the buffers
 	memset(&this->layers[layer_id].buffers, 0, sizeof(this->layers[layer_id].buffers));
-//	switch (backbuffer) {
-//	case 2:
-//		this->layers[layer_id].buffers[2].ptr  = ((char *)this->framebuffer_base)
-//												+ 2 * this->fix_screeninfo.line_length * this->var_screeninfo.yres;
-//		this->layers[layer_id].buffers[2].pitch= this->fix_screeninfo.line_length;
-//		this->layers[layer_id].buffers[2].hwbuffer = true;
-//	case 1:
-//		this->layers[layer_id].buffers[1].ptr  = ((char *)this->framebuffer_base)
-//												 + this->fix_screeninfo.line_length * this->var_screeninfo.yres;
-//		this->layers[layer_id].buffers[1].pitch= this->fix_screeninfo.line_length;
-//		this->layers[layer_id].buffers[1].hwbuffer = true;
-//	case 0:
-//		this->layers[layer_id].buffers[0].ptr  = this->framebuffer_base;
-//		this->layers[layer_id].buffers[0].pitch= this->fix_screeninfo.line_length;
-//		this->layers[layer_id].buffers[0].hwbuffer = true;
-//		break;
-//	default:
-//		return false;
-//	}
+
+	this->layers[layer_id].buffers[0].ptr  = this->framebuffer_base;
+	this->layers[layer_id].buffers[0].pitch= this->stride;
+	this->layers[layer_id].buffers[0].hwbuffer = true;
 
 	// layer is initialized
 	this->layers[layer_id].isinitialized = true;
@@ -563,312 +723,71 @@ void MMSKms::genFBPixelFormat(MMSFBSurfacePixelFormat pf, unsigned int *nonstd_f
 	this->onGenFBPixelFormat.emit(pf, nonstd_format, pixeldef);
 }
 
-void MMSKms::disable(int fd, string device_file) {
-	// have to disable the framebuffer
-	if (!this->onDisable.emit(fd, device_file)) {
-		// use FBIOPUT_VSCREENINFO and FBIOBLANK together
-//		struct fb_var_screeninfo var_screeninfo;
-//		ioctl(fd, FBIOGET_VSCREENINFO, &var_screeninfo);
-//		var_screeninfo.activate = FB_ACTIVATE_NOW;
-//		var_screeninfo.accel_flags = 0;
-//		var_screeninfo.xres = 0;
-//		var_screeninfo.yres = 0;
-//		var_screeninfo.xres_virtual = 0;
-//		var_screeninfo.yres_virtual = 0;
-//		var_screeninfo.xoffset = 0;
-//		var_screeninfo.yoffset = 0;
-//		var_screeninfo.grayscale = 0;
-//		ioctl(fd, FBIOPUT_VSCREENINFO, &var_screeninfo);
-//		ioctl(fd, FBIOBLANK, 1);
-	}
+DRM *MMSKms::getDrm() {
+	return &(this->drm);
 }
 
-bool MMSKms::activate(int fd, string device_file, struct fb_var_screeninfo *var_screeninfo,
-						int width, int height, MMSFBSurfacePixelFormat pixelformat, bool switch_mode) {
+void MMSKms::pageFlip() {
 
-	// try callback
-	if (!this->onActivate.emit(fd, device_file, var_screeninfo, width, height, pixelformat, switch_mode)) {
-		// no callback set or callback failed
-//		if (switch_mode) {
-//			if (ioctl(fd, FBIOPUT_VSCREENINFO, var_screeninfo) < 0) {
-//				printf("MMSKms: could not switch to mode %dx%d, pixelformat %s (%d bits, nonstd %d), %s\n",
-//						width, height, getMMSFBPixelFormatString(pixelformat).c_str(),
-//						var_screeninfo->bits_per_pixel, var_screeninfo->nonstd,
-//						device_file.c_str());
-//				return false;
-//			}
-//		}
-	}
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(0, &fds);
+	FD_SET(this->drm.fd, &fds);
 
-//    // get fix screen infos
-//    if (ioctl(this->fd, FBIOGET_FSCREENINFO, &this->fix_screeninfo) < 0) {
-//    	printf("MMSKms: could not get fix screen infos from %s\n", this->device_file.c_str());
-//        return false;
-//    }
-//
-//    // get variable screen infos
-//    if (ioctl(this->fd, FBIOGET_VSCREENINFO, &this->var_screeninfo) < 0) {
-//    	printf("MMSKms: could not get var screen infos from %s\n", this->device_file.c_str());
-//        return false;
-//    }
+	DRM_FB *my_fb;
+	struct gbm_bo *next_bo;
+	int waiting_for_flip = 1;
 
-    return true;
-}
+	next_bo = gbm_surface_lock_front_buffer(this->drm.surface);
+	my_fb = (DRM_FB*)drm_fb_get_from_bo(next_bo);
+//	my_fb = (DRM_FB*)drm_fb_get_from_bo(this->bo);
+//	my_fb = this->fb;
 
-bool MMSKms::setMode(int width, int height, MMSFBSurfacePixelFormat pixelformat, int backbuffer) {
-	bool do_switch = false;
+	int ret =0;
 
-	// is initialized?
-	INITCHECK;
-
-	if (width <= 0 || height <= 0) {
-		// have to disable the framebuffer
-		//disable(this->drm.fd, this->device_file);
-		return true;
-	}
-
-	/* set mode: */
-	int ret = 0;
-	ret = drmModeSetCrtc(this->drm.fd, this->drm.crtc_id, this->fb->fb_id, 0, 0,
-						&this->drm.connector_id, 1, this->drm.mode);
-
-	if (ret) {
-		printf("failed to set mode: %s\n", strerror(errno));
-		return false;
-	}
-
-	return true;
-
-//    // reload fix screen infos before changing it
-//    if (ioctl(this->fd, FBIOGET_FSCREENINFO, &this->fix_screeninfo) < 0) {
-//    	printf("MMSKms: could not get fix screen infos from %s\n", this->device_file.c_str());
-//        return false;
-//    }
-//    printFixScreenInfo();
+//	ret = drmModeSetCrtc(this->drm.fd, this->drm.crtc_id, my_fb->fb_id, 0, 0,
+//						&this->drm.connector_id, 1, this->drm.mode);
 //
-//    // reload variable screen infos before changing it
-//    if (ioctl(this->fd, FBIOGET_VSCREENINFO, &this->var_screeninfo) < 0) {
-//    	printf("MMSKms: could not get var screen infos from %s\n", this->device_file.c_str());
-//        return false;
-//    }
-//    printVarScreenInfo();
+//	if (ret) {
+//		printf("failed to set mode: %s\n", strerror(errno));
+//		return;
+//	}
 //
-//    if (backbuffer) {
-//    	if ((!this->fix_screeninfo.ypanstep)&&(!this->fix_screeninfo.ywrapstep)) {
-//        	printf("MMSKms: backbuffer requested, but hardware does not support it for %s\n", this->device_file.c_str());
-//            return false;
-//    	}
-//    }
+//	drmModeObjectSetProperty(this->drm.fd, this->drm.plane_id, DRM_MODE_OBJECT_PLANE, 8, 4);
 //
-//	// get bits per pixel and its length/offset
-//	unsigned int nonstd_format;
-//	MMSFBPixelDef pixeldef;
-//	genFBPixelFormat(pixelformat, &nonstd_format, &pixeldef);
+//	if ((this->drm.width != this->drm.mode->hdisplay) || (this->drm.height != this->drm.mode->vdisplay)) {
+//		ret = drmModeSetPlane(this->drm.fd, this->drm.plane_id, this->drm.crtc_id,
+//				my_fb->fb_id, 0, 0, 0, this->drm.mode->hdisplay, this->drm.mode->vdisplay,
+//				0, (this->drm.mode->vdisplay-this->drm.height) << 16, this->drm.width << 16, this->drm.height << 16);
 //
-//	// check if mode is already set
-//    if (!nonstd_format) {
-//    	// do it only if a std format is requested
-//		if    ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)
-//			&& (pixeldef.bits == (int)this->var_screeninfo.bits_per_pixel) && (this->layers[0].pixelformat == pixelformat)
-//			&& (!backbuffer || (this->var_screeninfo.yres_virtual >= this->var_screeninfo.yres * (backbuffer+1)))) {
-//			// mode already set, no switch required
-//			printf("MMSKms: using preset mode %dx%d, pixelformat %s (%d bits), %s\n",
-//					width, height, getMMSFBPixelFormatString(pixelformat).c_str(), pixeldef.bits,
-//					this->device_file.c_str());
-//
-//			// we have to activate the device (can be disabled), but mode switch is not required
-//		    activate(this->fd, this->device_file, &this->var_screeninfo, width, height, pixelformat, false);
-//			return true;
-//		}
-//    }
-//
-//    if (!do_switch) {
-//		// searching for mode
-//		for (int cnt = 0; cnt < this->modes_cnt; cnt++) {
-//			struct fb_var_screeninfo *mode = &this->modes[cnt];
-//			if ((width == (int)mode->xres) && (height == (int)mode->yres) && (pixeldef.bits == (int)mode->bits_per_pixel)) {
-//				// mode matches, switch to it
-//				this->var_screeninfo = *mode;
-//
-//				this->var_screeninfo.activate = FB_ACTIVATE_NOW;
-//				this->var_screeninfo.accel_flags = 0;
-//
-//        	    this->var_screeninfo.nonstd = nonstd_format;
-//
-//				this->var_screeninfo.red.length = pixeldef.red_length;
-//				this->var_screeninfo.red.offset = pixeldef.red_offset;
-//				this->var_screeninfo.green.length = pixeldef.green_length;
-//				this->var_screeninfo.green.offset = pixeldef.green_offset;
-//				this->var_screeninfo.blue.length = pixeldef.blue_length;
-//				this->var_screeninfo.blue.offset = pixeldef.blue_offset;
-//				this->var_screeninfo.transp.length = pixeldef.transp_length;
-//				this->var_screeninfo.transp.offset = pixeldef.transp_offset;
-//
-//				this->var_screeninfo.xres_virtual = this->var_screeninfo.xres;
-//				this->var_screeninfo.yres_virtual = this->var_screeninfo.yres * (backbuffer+1);
-//				this->var_screeninfo.xoffset = 0;
-//				this->var_screeninfo.yoffset = 0;
-//				this->var_screeninfo.grayscale = 0;
-//
-//				do_switch = true;
-//				break;
-//			}
-//		}
-//    }
-//
-//    if (!do_switch) {
-//        // no mode found
-//    	printf("MMSKms: no mode %dx%d, bit depth %d (%s) found in /etc/fb.modes\n",
-//    			width, height, pixeldef.bits, getMMSFBPixelFormatString(pixelformat).c_str());
-//
-//    	// searching for mode with any pixelformat
-//        for (int cnt = 0; cnt < this->modes_cnt; cnt++) {
-//        	struct fb_var_screeninfo *mode = &this->modes[cnt];
-//        	if ((width == (int)mode->xres) && (height == (int)mode->yres)) {
-//        		// mode matches, switch to it
-//        	    this->var_screeninfo = *mode;
-//
-//				printf("MMSKms: trying to use first mode %dx%d, bit depth %d from /etc/fb.modes\n", width, height, this->var_screeninfo.bits_per_pixel);
-//
-//                this->var_screeninfo.activate = FB_ACTIVATE_NOW;
-//        	    this->var_screeninfo.accel_flags = 0;
-//
-//        	    this->var_screeninfo.nonstd = nonstd_format;
-//
-//        	    this->var_screeninfo.bits_per_pixel = pixeldef.bits;
-//        	    this->var_screeninfo.red.length = pixeldef.red_length;
-//    			this->var_screeninfo.red.offset = pixeldef.red_offset;
-//    			this->var_screeninfo.green.length = pixeldef.green_length;
-//    			this->var_screeninfo.green.offset = pixeldef.green_offset;
-//    			this->var_screeninfo.blue.length = pixeldef.blue_length;
-//    			this->var_screeninfo.blue.offset = pixeldef.blue_offset;
-//    			this->var_screeninfo.transp.length = pixeldef.transp_length;
-//    			this->var_screeninfo.transp.offset = pixeldef.transp_offset;
-//
-//    			this->var_screeninfo.xres_virtual = this->var_screeninfo.xres;
-//    			this->var_screeninfo.yres_virtual = this->var_screeninfo.yres * (backbuffer+1);
-//    			this->var_screeninfo.xoffset = 0;
-//    			this->var_screeninfo.yoffset = 0;
-//    			this->var_screeninfo.grayscale = 0;
-//
-//    			do_switch = true;
-//    			break;
-//        	}
-//    	}
-//    }
-//
-//    if (!do_switch) {
-//        // no mode found
-//    	printf("MMSKms: no mode %dx%d with any bit depth found in /etc/fb.modes\n", width, height);
-//
-//        // check if resolution has changed
-//    	if  ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)) {
-//			// resolution has not changed, so try to change only the pixelformat
-//			printf("MMSKms: resolution is the same, so try to change the pixelformat to %s, %s\n",
-//					getMMSFBPixelFormatString(pixelformat).c_str(),
-//					this->device_file.c_str());
-//
-//			this->var_screeninfo.activate = FB_ACTIVATE_NOW;
-//			this->var_screeninfo.accel_flags = 0;
-//
-//    	    this->var_screeninfo.nonstd = nonstd_format;
-//
-//    	    this->var_screeninfo.bits_per_pixel = pixeldef.bits;
-//			this->var_screeninfo.red.length = pixeldef.red_length;
-//			this->var_screeninfo.red.offset = pixeldef.red_offset;
-//			this->var_screeninfo.green.length = pixeldef.green_length;
-//			this->var_screeninfo.green.offset = pixeldef.green_offset;
-//			this->var_screeninfo.blue.length = pixeldef.blue_length;
-//			this->var_screeninfo.blue.offset = pixeldef.blue_offset;
-//			this->var_screeninfo.transp.length = pixeldef.transp_length;
-//			this->var_screeninfo.transp.offset = pixeldef.transp_offset;
-//
-//			if (backbuffer) {
-//    			this->var_screeninfo.xres_virtual = this->var_screeninfo.xres;
-//				this->var_screeninfo.yres_virtual = this->var_screeninfo.yres * (backbuffer+1);
-//    			this->var_screeninfo.xoffset = 0;
-//    			this->var_screeninfo.yoffset = 0;
-//			}
-//
-//			do_switch = true;
-//		}
-//    	else
-//		if  (this->layers[0].pixelformat == pixelformat) {
-//			// pixelformat has not changed, so try to change only the resolution
-//			printf("MMSKms: pixelformat is the same, so try to change the resolution to %dx%d, %s\n",
-//					width, height,
-//					this->device_file.c_str());
-//
-//			this->var_screeninfo.activate = FB_ACTIVATE_NOW;
-//			this->var_screeninfo.accel_flags = 0;
-//
-//			this->var_screeninfo.xres = width;
-//			this->var_screeninfo.yres = height;
-//
-//			this->var_screeninfo.xres_virtual = this->var_screeninfo.xres;
-//			this->var_screeninfo.yres_virtual = this->var_screeninfo.yres * (backbuffer+1);
-//			this->var_screeninfo.xoffset = 0;
-//			this->var_screeninfo.yoffset = 0;
-//			this->var_screeninfo.grayscale = 0;
-//
-//			do_switch = true;
-//		}
-//    }
-//
-//	if (do_switch) {
-//		// switch now
-//	    if (!activate(this->fd, this->device_file, &this->var_screeninfo, width, height, pixelformat)) {
-//	        return false;
-//	    }
-//
-//	    // check the result of activation
-//		if    ((width == (int)this->var_screeninfo.xres) && (height == (int)this->var_screeninfo.yres)
-//			&& (pixeldef.bits == (int)this->var_screeninfo.bits_per_pixel)) {
-//
-//			printf("MMSKms: mode successfully switched to %dx%d, pixelformat %s (%d bits), %s\n",
-//					width, height, getMMSFBPixelFormatString(pixelformat).c_str(), pixeldef.bits,
-//					this->device_file.c_str());
-//
-//			if (backbuffer) {
-//				if (this->var_screeninfo.yres_virtual < this->var_screeninfo.yres * (backbuffer+1)) {
-//					printf("MMSKms: buffer size %dx%d is to small (%dx%d requested), %s\n",
-//							this->var_screeninfo.xres_virtual, this->var_screeninfo.yres_virtual,
-//							this->var_screeninfo.xres, this->var_screeninfo.yres * (backbuffer+1),
-//							this->device_file.c_str());
-//					return false;
-//				}
-//			}
-//		}
-//		else {
-//			printf("MMSKms: mode switch to %dx%d, pixelformat %s (%d bits) failed, %s\n",
-//					width, height, getMMSFBPixelFormatString(pixelformat).c_str(), pixeldef.bits,
-//					this->device_file.c_str());
-//			return false;
-//		}
-//
-//		// build the pixelformat
-//		if (!buildPixelFormat()) {
-//		    printf("MMSKms: unsupported pixelformat: r=%d(offs=%d), g=%d(offs=%d), b=%d(offs=%d), a=%d(offs=%d) (%d bit)\n",
-//					this->var_screeninfo.red.length,    this->var_screeninfo.red.offset,
-//					this->var_screeninfo.green.length,  this->var_screeninfo.green.offset,
-//					this->var_screeninfo.blue.length,   this->var_screeninfo.blue.offset,
-//					this->var_screeninfo.transp.length, this->var_screeninfo.transp.offset,
-//					this->var_screeninfo.bits_per_pixel);
-//			return false;
-//		}
-//
-//		if (this->layers[0].pixelformat != pixelformat) {
-//			printf("MMSKms: pixelformat not correctly set, %s set, %s requested\n",
-//					getMMSFBPixelFormatString(this->layers[0].pixelformat).c_str(),
-//					getMMSFBPixelFormatString(pixelformat).c_str());
-//			return false;
-//		}
-//
-//		return true;
+//		if (ret)
+//			printf("drmModeSetPlane failed\n");
 //	}
 
-	return false;
-}
+	ret = 0;
+	ret = drmModePageFlip(this->drm.fd, this->drm.crtc_id, my_fb->fb_id,	DRM_MODE_PAGE_FLIP_EVENT, &waiting_for_flip);
+	if (ret) {
+		printf("OPENGL_SWAP: failed to queue page flip\n");
+		return;
+	}
 
+	while (waiting_for_flip) {
+		ret = select(this->drm.fd + 1, &fds, NULL, NULL, NULL);
+		if (ret < 0) {
+			printf("OPENGL_SWAP: select err\n");
+			return;
+		} else if (ret == 0) {
+			printf("OPENGL_SWAP: select timeout!\n");
+			return;
+		} else if (FD_ISSET(0, &fds)) {
+			printf("OPENGL_SWAP: user interrupted!\n");
+			break;
+		}
+		drmHandleEvent(this->drm.fd, &this->evctx);
+	}
+
+	gbm_surface_release_buffer(this->drm.surface, next_bo);
+//	bo = next_bo;
+}
 
 #endif

@@ -107,7 +107,7 @@ typedef struct {
     int 	currbuffer_write;
     //! surface buffer attached to this MMSFBSurface is externally allocated?
     bool	external_buffer;
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
     //! interface to the fb layer surface
     class MMSFBSurface	*mmsfbdev_surface;
 #endif
@@ -197,7 +197,7 @@ class MMSFBSurface {
 		class MMSPerf *mmsperf;
 #endif
 
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
 	    //! separate thread used for display panning
 	    MMSThreadServer		*fbdev_ts;
 #endif

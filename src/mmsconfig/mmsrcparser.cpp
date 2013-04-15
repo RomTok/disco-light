@@ -362,6 +362,7 @@ void MMSRcParser::check_outputtype(MMSFBOutputType outputtype, xmlChar *parname,
 	if (this->graphics.backend == MMSFB_BE_KMS) {
 		switch (outputtype) {
 		case MMSFB_OT_OGL:
+		case MMSFB_OT_OMAPFB:
 			// okay
 			break;
 		default:

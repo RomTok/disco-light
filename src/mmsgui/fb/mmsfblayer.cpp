@@ -73,7 +73,7 @@ MMSFBLayer::MMSFBLayer(int id, MMSFBBackend backend, MMSFBOutputType outputtype)
     this->config.window_pixelformat = MMSFB_PF_ARGB;
     this->config.surface_pixelformat = MMSFB_PF_ARGB;
 
-#ifdef __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
     this->mmsfbdev_surface = NULL;
 #endif
 
@@ -213,8 +213,8 @@ MMSFBLayer::~MMSFBLayer() {
 #endif
     }
     else
-    if (this->config.backend == MMSFB_BE_FBDEV) {
-#ifdef __HAVE_FBDEV__
+    if ((this->config.backend == MMSFB_BE_FBDEV) || (this->config.backend == MMSFB_BE_KMS)) {
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
         if (this->mmsfbdev_surface)
         	delete this->mmsfbdev_surface;
 #endif
@@ -603,6 +603,26 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 		mmsfb->mmskms->getPixelFormat(this->config.id, &this->config.pixelformat);
 		this->config.buffermode = buffermode;
 		this->config.options = MMSFB_LO_NONE;
+
+		// create a new surface instance for the framebuffer memory
+		this->mmsfbdev_surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat,
+												  MMSFB_MAX_SURFACE_PLANES_BUFFERS - 1, buffers);
+		if (!this->mmsfbdev_surface) {
+			MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
+			return false;
+		}
+
+	    if (this->config.outputtype == MMSFB_OT_OGL) {
+			// we must switch extended accel off
+			this->mmsfbdev_surface->setExtendedAcceleration(false);
+	    }
+	    else {
+			// we must switch extended accel on
+			this->mmsfbdev_surface->setExtendedAcceleration(true);
+	    }
+
+    	// mark this surface as a layer surface
+		this->mmsfbdev_surface->setLayerSurface();
 
 	    if (this->config.outputtype == MMSFB_OT_OGL) {
 #ifdef __HAVE_OPENGL__
@@ -1487,6 +1507,43 @@ bool MMSFBLayer::getSurface(MMSFBSurface **surface, bool clear) {
     		}
 #endif
         }
+        else
+    	if (this->config.buffermode == MMSFB_BM_FRONTONLY) {
+    		// we have only the front buffer, no backbuffer to be allocated
+    		*surface = this->mmsfbdev_surface;
+			if (!*surface) {
+				MMSFB_SetError(0, "layer surface is not initialized");
+				return false;
+			}
+    	}
+    	else
+		if (this->config.buffermode == MMSFB_BM_BACKSYSTEM) {
+			// create a new backbuffer surface instance
+			*surface = new MMSFBSurface(this->config.w, this->config.h, this->config.pixelformat);
+			if (!*surface) {
+				MMSFB_SetError(0, "cannot create new instance of MMSFBSurface");
+				return false;
+			}
+
+			// the surface has to know the fbdev surface, so surface->flip() can update the fbdev memory
+			(*surface)->config.surface_buffer->mmsfbdev_surface = this->mmsfbdev_surface;
+
+			// we must switch extended accel on
+			(*surface)->setExtendedAcceleration(true);
+		}
+		else {
+    		// we assume that we have at least one backbuffer in video memory
+    		*surface = this->mmsfbdev_surface;
+			if (!*surface) {
+				MMSFB_SetError(0, "layer surface is not initialized");
+				return false;
+			}
+
+			// the surface has to know the fbdev surface, so surface->flip() can update the fbdev memory
+			// here we point to the same surface, in this case the flip can save the memcpy() and
+			// can use the hardware panning instead
+			(*surface)->config.surface_buffer->mmsfbdev_surface = this->mmsfbdev_surface;
+		}
 #endif
     }
     else

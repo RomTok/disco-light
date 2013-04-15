@@ -265,7 +265,7 @@ typedef enum {
 #define MMSFB_OT_VALID_VALUES_BE_FBDEV	"STDFB, MATROXFB, DAVINCIFB, OMAPFB, OGL"
 
 //! list of valid output types for backend MMSFB_BE_KMS
-#define MMSFB_OT_VALID_VALUES_BE_KMS	"OGL"
+#define MMSFB_OT_VALID_VALUES_BE_KMS	"OMAPFB, OGL"
 
 // conversion routines for output types
 string getMMSFBOutputTypeString(MMSFBOutputType ot);

@@ -97,7 +97,7 @@ class MMSFBLayer {
         IDirectFBDisplayLayer   *dfblayer;
 #endif
 
-#ifdef  __HAVE_FBDEV__
+#if defined(__HAVE_FBDEV__) || defined(__HAVE_KMS__)
         MMSFBSurface	*mmsfbdev_surface;
 #endif
 
