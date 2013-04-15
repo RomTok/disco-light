@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -33,10 +33,10 @@
 #ifndef MMSPROPERTYDATA_H_
 #define MMSPROPERTYDATA_H_
 
-using namespace std;
-
 #include <string>
 #include <vector>
+
+using namespace std;
 
 #define MMSPROPERTYTYPE_STRING  "string"
 #define MMSPROPERTYTYPE_INTEGER "integer"

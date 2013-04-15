@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -33,9 +33,9 @@
 #ifndef DATASOURCE_H_
 #define DATASOURCE_H_
 
-using namespace std;
-
 #include <string>
+
+using namespace std;
 
 /**
  * @file datasource.h

@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -1308,7 +1308,7 @@ string MMSDialogManager::getMenuValues(MMSTaffFile *tafff, MMSWidget *currentWid
 
     if (haveItemTemplate) {
 		// have a template
-		bool haveItems;
+		bool haveItems = false;
 
 		if (tf) {
 			// searching for menu items which are set in the THEME file

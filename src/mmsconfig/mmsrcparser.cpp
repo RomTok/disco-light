@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -30,9 +30,9 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA            *
  **************************************************************************/
 
-using namespace std;
-
 #include <iostream>
+
+using namespace std;
 
 #include <cstring>
 #include "mmsconfig/mmsrcparser.h"

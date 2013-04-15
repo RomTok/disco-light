@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -193,12 +193,6 @@ void MMSInputManager::handleInput(MMSInputEvent *inputevent) {
 		MSG2OUT("MMSINPUTMANAGER", "MMSInputManager:handleInput: BUTTON PRESSED AT: %d,%d", inputevent->posx, inputevent->posy);
 		struct timespec ts;
 		clock_gettime(CLOCK_REALTIME,&ts);
-		int64_t diff = timespecDiff(&ts, &this->lastinput);
-		//printf("diff %ld\n",diff);
-		/*if(diff < 130000000) {
-			memset(inputevent, 0, sizeof(MMSInputEvent));
-			return;
-		}*/
 		clock_gettime(CLOCK_REALTIME,&this->lastinput);
 
 		this->button_pressed = true;

@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -42,9 +42,9 @@ string MMSWidget_inputmode = "";
 
 MMSWidget::MMSWidget() :
 	da(NULL), // per default no attributes for drawable widgets are allocated
-	initialized(false),
 	name(""),
 	sizehint(""),
+	minmax_set(false),
 	min_width(""),
 	min_width_pix(0),
 	min_height(""),
@@ -53,7 +53,6 @@ MMSWidget::MMSWidget() :
 	max_width_pix(0),
 	max_height(""),
 	max_height_pix(0),
-	minmax_set(false),
 	content_size_initialized(false),
 	content_width(0),
 	content_height(0),
@@ -76,11 +75,15 @@ MMSWidget::MMSWidget() :
 	brightness(255),
 	opacity(255),
 	has_own_surface(false), //TODO: textbox widget should have its one surface
+	skip_refresh(false),
+	current_bgset(false),
+	current_bgimage(NULL),
 	onSelect(NULL),
 	onFocus(NULL),
 	onReturn(NULL),
 	onClick(NULL),
 	geomset(false),
+	initialized(false),
 	toRedraw(false),
 	redrawChildren(false),
 	windowSurface(NULL),
@@ -88,12 +91,7 @@ MMSWidget::MMSWidget() :
 	surfaceGeom(MMSFBRectangle(0,0,0,0)),
 	parent(NULL),
 	geom(MMSFBRectangle(0,0,0,0)),
-	innerGeom(MMSFBRectangle(0,0,0,0)),
-	skip_refresh(false) {
-
-
-    this->current_bgset = false;
-
+	innerGeom(MMSFBRectangle(0,0,0,0)) {
 	MMSIdFactory factory;
     this->id = factory.getId();
 }
@@ -163,6 +161,8 @@ string MMSWidget::getTypeString() {
 		return "checkbox";
 	case MMSWIDGETTYPE_GAP:
 		return "gap";
+	case MMSWIDGETTYPE_CANVAS:
+		return "canvas";
 	}
 	return "";
 }
@@ -1124,7 +1124,7 @@ void MMSWidget::initContentSize() {
 	this->content_size_initialized = true;
 
 	// for all my children
-	for (int i=0; i < children.size(); i++) {
+	for (unsigned int i=0; i < children.size(); i++) {
 		children.at(i)->initContentSize();
 	}
 }

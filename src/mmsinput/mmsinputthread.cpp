@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -58,6 +58,7 @@ void MMSInputThread::threadMain() {
     int                     lkcnt = 0, skip = 0;
 
     lastevent.type = MMSINPUTEVENTTYPE_NONE;
+    lastevent.key = MMSKEY_UNKNOWN;
 
 	if (this->handler == NULL) {
 		if (mmsfb->getBackend()==MMSFB_BE_DFB) {

@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -75,16 +75,15 @@ string MMSConverter::convert(string frompage, string buffer) {
 		sprintf(line,"%s",buffer.c_str());
 		sizein = strlen(line);
 		lineptr=line;
-		//logger.writeLog("before sizein(" + iToStr(sizein) + ") sizeout(" + iToStr(sizeout) + ")");
-		//logger.writeLog("string before: |BEGIN|" + string(line) + "|END|");
 		sizeret=iconv(it->second,&lineptr, &sizein,&retlineptr,&sizeout);
-		//logger.writeLog("before sizein(" + iToStr(sizein) + ") sizeout(" + iToStr(sizeout) + ") sizeret(" + iToStr(sizeret) + ") " + strerror(errno));
-		//logger.writeLog("string after: |BEGIN|" + string(retline) + "|END|");
+		if(sizeret == (size_t)-1) {
+			DEBUGMSG("MMSConverter", "Error converting " + buffer + "(" + strerror(errno) + ")");
+		}
 		mutex.unlock();
 		return retline;
 	} else {
-			mutex.unlock();
-			throw MMSConverterError(0,"have no translation descriptor");
+		mutex.unlock();
+		throw MMSConverterError(0,"have no translation descriptor");
 	}
 	mutex.unlock();
 	return "";

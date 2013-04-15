@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -1026,7 +1026,7 @@ bool MMSWindow::removeChildWindow(MMSWindow *childwin) {
     		}
 
     		int childwinsize = this->childwins.size()-1;
-			if ((this->focusedChildWin > childwinsize) && (childwinsize >= 0))
+			if (((int)this->focusedChildWin > childwinsize) && (childwinsize >= 0))
 				this->focusedChildWin = childwinsize;
 
             unlock();
@@ -1649,7 +1649,7 @@ bool MMSWindow::flipWindow(MMSWindow *win, MMSFBRegion *region, MMSFBFlipFlags f
 void MMSWindow::removeFocusFromChildWindow() {
     /* check something */
     if (!this->parent) return;
-    if ((this->parent->focusedChildWin < 0) || (this->parent->focusedChildWin >= this->parent->childwins.size())) return;
+    if (this->parent->focusedChildWin >= this->parent->childwins.size()) return;
     if (this->parent->childwins.at(this->parent->focusedChildWin).window != this) return;
 
     // searching for other childwin to get the focus
@@ -3602,22 +3602,14 @@ bool MMSWindow::setFirstFocus(bool cw) {
         }
 
         if (found) {
-            static bool again;
+            static bool again = false;
 
             if (!again) {
-                 int fd = open( "/dev/kmsg", O_WRONLY );
+                DEBUGMSG("MMSGUI", "MMSWindow::setFirstFocus() found first focus");
+                if (getenv( "MMS_EXIT_ON_FIRST_FOCUS" ))
+                    exit(0);
 
-                 if (fd >= 0) {
-                      char msg[] = "MMSWindow::setFirstFocus() found first focus\n";
-
-                      write( fd, msg, sizeof(msg) );
-                      close( fd );
-                 }
-
-                 if (getenv( "MMS_EXIT_ON_FIRST_FOCUS" ))
-                     exit(0);
-
-                 again = true;
+                again = true;
             }
             return true;
         }
@@ -5249,7 +5241,7 @@ unsigned int MMSWindow::printStack(char *buffer, int space) {
 	ptr+=33 - space;
 
 	// this ptr
-	cnt = sprintf(ptr, "%08x", this);
+	cnt = sprintf(ptr, "%p", this);
 	ptr[cnt] = ' ';
 	ptr+=9;
 

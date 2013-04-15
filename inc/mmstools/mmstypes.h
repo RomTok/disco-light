@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -33,10 +33,11 @@
 #ifndef MMSTYPES_H_
 #define MMSTYPES_H_
 
+#include <string>
+
 using namespace std;
 
 #include <sigc++/sigc++.h>
-#include <string>
 
 // sigc++ accumulators.......................................................
 

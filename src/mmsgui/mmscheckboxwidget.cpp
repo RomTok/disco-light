@@ -5,7 +5,7 @@
  *   Copyright (C) 2007-2008 BerLinux Solutions GbR                        *
  *                           Stefan Schwarzer & Guido Madaus               *
  *                                                                         *
- *   Copyright (C) 2009-2012 BerLinux Solutions GmbH                       *
+ *   Copyright (C) 2009-2013 BerLinux Solutions GmbH                       *
  *                                                                         *
  *   Authors:                                                              *
  *      Stefan Schwarzer   <stefan.schwarzer@diskohq.org>,                 *
@@ -315,7 +315,7 @@ bool MMSCheckBoxWidget::draw(bool *backgroundFilled) {
     	// not checked, let base widget draw
         MMSWidget::draw(backgroundFilled);
 
-        this->current_checked_bgcolor   = NULL;
+        this->current_checked_bgcolor   = MMSFBColor(0, 0, 0, 0);
         this->current_checked_bgimage   = NULL;
         this->current_checked_bgset     = true;
     }

@@ -38,7 +38,7 @@ static const unsigned int BEZIER_STEPS = 5;
 MMSFTContour::MMSFTContour(FT_Vector *outlineVertexList, char *outlineVertexTags, unsigned int outlineNumVertices) {
 
 	MMSFTVertex prev, cur(outlineVertexList[(outlineNumVertices - 1) % outlineNumVertices]), next(outlineVertexList[0]);
-    MMSFTVertex a, b = next - cur;
+    MMSFTVertex a;
     double olddir, dir = atan2((next - cur).Y(), (next - cur).X());
     double angle = 0.0;
 
