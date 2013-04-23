@@ -302,8 +302,11 @@ bool MMSFB::getLayer(int id, MMSFBLayer **layer, MMSFBOutputType outputtype, boo
 #endif
 #ifdef __HAVE_GLX__
 #else
-			MMSFB_SetError(0, "compile GLX support!");
+#ifdef __HAVE_EGL__
+#else
+			MMSFB_SetError(0, "compile GLX or EGL support!");
 			return false;
+#endif
 #endif
 		}
     }

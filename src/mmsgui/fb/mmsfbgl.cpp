@@ -585,7 +585,217 @@ bool MMSFBGL::init(Display *x_display, int x_screen, Window x_window, int w, int
 
 #ifdef __HAVE_EGL__
 	//TODO: implement EGL for XLIB
-	return false;
+	printf("\nInitializing EGL:\n");
+	printf("----------------------------------------------------------------------\n");
+
+	this->x_display = x_display;
+	this->x_window = x_window;
+
+	eglDisplay = eglGetDisplay((EGLNativeDisplayType) x_display);
+
+	if (eglDisplay == EGL_NO_DISPLAY) {
+		printf("Error: eglGetDisplay() returned EGL_NO_DISPLAY.\n");
+		terminate();
+		return false;
+	}
+
+	/*
+		Step 2 - Initialize EGL.
+		EGL has to be initialized with the display obtained in the
+		previous step. We cannot use other EGL functions except
+		eglGetDisplay and eglGetError before eglInitialize has been
+		called.
+		If we're not interested in the EGL version number we can just
+		pass NULL for the second and third parameters.
+	*/
+	EGLint iMajorVersion, iMinorVersion;
+	if (!eglInitialize(eglDisplay, &iMajorVersion, &iMinorVersion))
+	{
+		printf("Error: eglInitialize() failed.\n");
+		terminate();
+		return false;
+	}
+
+	/*
+		Step 3 - Make OpenGL ES the current API.
+		EGL provides ways to set up OpenGL ES and OpenVG contexts
+		(and possibly other graphics APIs in the future), so we need
+		to specify the "current API".
+	*/
+	eglBindAPI(EGL_OPENGL_ES_API);
+
+	if (eglGetError() != EGL_SUCCESS)
+	if (!getError("eglBindAPI"))
+	{
+		terminate();
+		return false;
+	}
+
+	/*
+		Step 4 - Specify the required configuration attributes.
+		An EGL "configuration" describes the pixel format and type of
+		surfaces that can be used for drawing.
+		For now we just want to use a 16 bit RGB surface that is a
+		Window surface, i.e. it will be visible on screen. The list
+		has to contain key/value pairs, terminated with EGL_NONE.
+	 */
+
+	EGLint pi32ConfigAttribs[11];
+	pi32ConfigAttribs[0] = EGL_SURFACE_TYPE;
+	pi32ConfigAttribs[1] = EGL_WINDOW_BIT;
+	pi32ConfigAttribs[2] = EGL_RENDERABLE_TYPE;
+	pi32ConfigAttribs[3] = EGL_OPENGL_ES2_BIT;
+	pi32ConfigAttribs[4] = EGL_RED_SIZE;
+	pi32ConfigAttribs[5] = 8;
+	pi32ConfigAttribs[6] = EGL_GREEN_SIZE;
+	pi32ConfigAttribs[7] = 8;
+	pi32ConfigAttribs[8] = EGL_BLUE_SIZE;
+	pi32ConfigAttribs[9] = 8;
+	pi32ConfigAttribs[10] = EGL_NONE;
+
+
+	/*
+		Step 5 - Find a config that matches all requirements.
+		eglChooseConfig provides a list of all available configurations
+		that meet or exceed the requirements given as the second
+		argument. In most cases we just want the first config that meets
+		all criteria, so we can limit the number of configs returned to 1.
+	*/
+	int iConfigs;
+	int config_size=10;
+
+	if (!eglChooseConfig(eglDisplay, pi32ConfigAttribs, eglConfig, config_size, &iConfigs) || (iConfigs < 1))
+	{
+		printf("Error: eglChooseConfig() failed.\n");
+		terminate();
+		return false;
+	}
+	else {
+		for (int i = 0; i < iConfigs; i++) {
+		   EGLint value;
+		   printf("config #%d ***\n", i);
+		   GET_ATTR(EGL_BUFFER_SIZE, "EGL_BUFFER_SIZE");
+		   GET_ATTR(EGL_ALPHA_SIZE, "EGL_ALPHA_SIZE");
+		   GET_ATTR(EGL_BLUE_SIZE, "EGL_BLUE_SIZE");
+		   GET_ATTR(EGL_GREEN_SIZE, "EGL_GREEN_SIZE");
+		   GET_ATTR(EGL_RED_SIZE, "EGL_RED_SIZE");
+		   GET_ATTR(EGL_DEPTH_SIZE, "EGL_DEPTH_SIZE");
+		   GET_ATTR(EGL_STENCIL_SIZE, "EGL_STENCIL_SIZE");
+		   GET_ATTR(EGL_CONFIG_CAVEAT, "EGL_CONFIG_CAVEAT");
+		   GET_ATTR(EGL_CONFIG_ID, "EGL_CONFIG_ID");
+		   GET_ATTR(EGL_LEVEL, "EGL_LEVEL");
+		   GET_ATTR(EGL_MAX_PBUFFER_HEIGHT, "EGL_MAX_PBUFFER_HEIGHT");
+		   GET_ATTR(EGL_MAX_PBUFFER_PIXELS, "EGL_MAX_PBUFFER_PIXELS");
+		   GET_ATTR(EGL_MAX_PBUFFER_WIDTH, "EGL_MAX_PBUFFER_WIDTH");
+		   GET_ATTR(EGL_NATIVE_RENDERABLE, "EGL_NATIVE_RENDERABLE");
+		   GET_ATTR(EGL_NATIVE_VISUAL_ID, "EGL_NATIVE_VISUAL_ID");
+		   GET_ATTR(EGL_NATIVE_VISUAL_TYPE, "EGL_NATIVE_VISUAL_TYPE");
+		   //GET_ATTR(EGL_PRESERVED_RESOURCES, "EGL_PRESERVED_RESOURCES"); not all gles2 implementations have this
+		   GET_ATTR(EGL_SAMPLES, "EGL_SAMPLES");
+		   GET_ATTR(EGL_SAMPLE_BUFFERS, "EGL_SAMPLE_BUFFERS");
+		   GET_ATTR(EGL_SURFACE_TYPE, "EGL_SURFACE_TYPE");
+		   GET_ATTR(EGL_TRANSPARENT_TYPE, "EGL_TRANSPARENT_TYPE");
+		   GET_ATTR(EGL_TRANSPARENT_BLUE_VALUE, "EGL_TRANSPARENT_BLUE_VALUE");
+		   GET_ATTR(EGL_TRANSPARENT_GREEN_VALUE, "EGL_TRANSPARENT_GREEN_VALUE");
+		   GET_ATTR(EGL_TRANSPARENT_RED_VALUE, "EGL_TRANSPARENT_RED_VALUE");
+		   GET_ATTR(EGL_NONE, "EGL_NONE");
+		   GET_ATTR(EGL_BIND_TO_TEXTURE_RGB, "EGL_BIND_TO_TEXTURE_RGB");
+		   GET_ATTR(EGL_BIND_TO_TEXTURE_RGBA, "EGL_BIND_TO_TEXTURE_RGBA");
+		   GET_ATTR(EGL_MIN_SWAP_INTERVAL, "EGL_MIN_SWAP_INTERVAL");
+		   GET_ATTR(EGL_MAX_SWAP_INTERVAL, "EGL_MAX_SWAP_INTERVAL");
+		   GET_ATTR(EGL_LUMINANCE_SIZE, "EGL_LUMINANCE_SIZE");
+		   GET_ATTR(EGL_ALPHA_MASK_SIZE, "EGL_ALPHA_MASK_SIZE");
+		   GET_ATTR(EGL_COLOR_BUFFER_TYPE, "EGL_COLOR_BUFFER_TYPE");
+		   GET_ATTR(EGL_RENDERABLE_TYPE, "EGL_RENDERABLE_TYPE");
+		   GET_ATTR(EGL_MATCH_NATIVE_PIXMAP, "EGL_MATCH_NATIVE_PIXMAP");
+		   GET_ATTR(EGL_CONFORMANT, "EGL_CONFORMANT");
+		}
+	}
+
+	/*
+		Step 6 - Create a surface to draw to.
+		Use the config picked in the previous step and the native window
+		handle when available to create a window surface. A window surface
+		is one that will be visible on screen inside the native display (or
+		fullscreen if there is no windowing system).
+		Pixmaps and pbuffers are surfaces which only exist in off-screen
+		memory.
+	*/
+	eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig[0], (EGLNativeWindowType) x_window, NULL);
+
+	if (!getError("eglCreateWindowSurface"))
+	{
+		terminate();
+		return false;
+	}
+
+	/*
+		Step 7 - Create a context.
+		EGL has to create a context for OpenGL ES. Our OpenGL ES resources
+		like textures will only be valid inside this context
+		(or shared contexts).
+	*/
+	EGLint ai32ContextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
+	eglContext = eglCreateContext(eglDisplay, eglConfig[0], EGL_NO_CONTEXT, ai32ContextAttribs);
+	if (!getError("eglCreateContext"))
+	{
+		terminate();
+		return false;
+	}
+
+	/*
+		Step 8 - Bind the context to the current thread and use our
+		window surface for drawing and reading.
+		Contexts are bound to a thread. This means you don't have to
+		worry about other threads and processes interfering with your
+		OpenGL ES application.
+		We need to specify a surface that will be the target of all
+		subsequent drawing operations, and one that will be the source
+		of read operations. They can be the same surface.
+	*/
+	eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext);
+	if (!getError("eglMakeCurrent"))
+	{
+		terminate();
+		return false;
+	}
+
+	/*
+		Step 9 - Draw something with OpenGL ES.
+		At this point everything is initialized and we're ready to use
+		OpenGL ES to draw something on the screen.
+	*/
+
+
+
+	// get the dimension of the screen
+	int wh[4];
+	glGetIntegerv(GL_VIEWPORT, wh);
+	this->screen_width = wh[2];
+	this->screen_height = wh[3];
+	printf("SCREEN WIDTH = %d, HEIGHT = %d\n", this->screen_width, this->screen_height);
+	printf("----------------------------------------------------------------------\n");
+
+	printImplementationInformation();
+
+	// init fragment and vertex shaders
+	if (initShaders()) {
+
+		// prepare current matrix for shaders
+		loadIdentityMatrix(this->current_matrix);
+
+		// prepare current color for shaders
+		this->current_color_r = 0;
+		this->current_color_g = 0;
+		this->current_color_b = 0;
+		this->current_color_a = 0;
+
+		// wrapper successfully initialized
+		this->initialized = true;
+	}
+
+    return true;
+
 #endif
 
 #ifdef __HAVE_GLX__
