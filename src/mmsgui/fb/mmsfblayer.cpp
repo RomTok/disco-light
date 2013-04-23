@@ -1273,7 +1273,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 
 	    if (this->config.outputtype == MMSFB_OT_OGL) {
 #ifdef __HAVE_OPENGL__
-#ifdef __HAVE_GLX__
+#if defined(__HAVE_GLX__) || defined(__HAVE_EGL__)
 			XUnlockDisplay(mmsfb->x_display);
 	    	mmsfb->bei->init(mmsfb->x_display, mmsfb->x_screen, this->x_window, mmsfb->x11_win_rect);
 			XLockDisplay(mmsfb->x_display);
