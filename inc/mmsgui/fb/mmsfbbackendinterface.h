@@ -321,9 +321,8 @@ public:
 
 #ifdef  __HAVE_XLIB__
 	void init(Display *x_display, int x_screen, Window x_window, MMSFBRectangle x11_win_rect);
-#else
-	void init();
 #endif
+	void init();
 
 	void swap();
 	void alloc(MMSFBSurface *surface);

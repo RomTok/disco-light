@@ -351,7 +351,7 @@ void MMSFBBackEndInterface::init(Display *x_display, int x_screen, Window x_wind
 	trigger((void*)&req, sizeof(req));
 }
 
-#else
+#endif
 
 void MMSFBBackEndInterface::init() {
 	// start the server thread
@@ -362,9 +362,6 @@ void MMSFBBackEndInterface::init() {
 	req.type = BEI_REQUEST_TYPE_INIT;
 	trigger((void*)&req, sizeof(req));
 }
-
-#endif
-
 
 void MMSFBBackEndInterface::processInit(BEI_INIT *req) {
 #ifdef __HAVE_OPENGL__
