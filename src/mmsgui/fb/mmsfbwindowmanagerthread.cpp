@@ -52,7 +52,10 @@ void MMSFBWindowManagerThread::threadMain() {
 		if (!this->flipQueue.empty()) {
 			FLIP_STRUCT tmpFlipStruct;
 			tmpFlipStruct = this->flipQueue.front();
-			this->flipQueue.pop();
+			// drop all refresh cmds
+			while (!this->flipQueue.empty()) {
+				this->flipQueue.pop();
+			}
 
 			lock->lock();
 	        mmsfbwindowmanager->flipSurface(tmpFlipStruct.surface, tmpFlipStruct.region,
