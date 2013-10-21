@@ -4565,7 +4565,7 @@ bool MMSWindow::handleInput(MMSInputEvent *inputevent) {
     bool ret = true;
     bool navigate = false;
 
-    if (this->shown == false) {
+    if (this->shown == false || this->willshow || this->willhide) {
         return false;
     }
 
