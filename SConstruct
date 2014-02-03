@@ -589,6 +589,10 @@ if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv or 'cppcheck' 
 		else:
 			conf.env['graphics_outputtype'].remove('xvshm')
 
+		# check for XRandr to support rotation
+		if conf.checkSimpleLib(['xrandr'],   ['X11/extensions/Xrandr.h'], required = 0):
+			conf.env['CCFLAGS'].extend(['-D__HAVE_XRANDR__'])
+
 		# checks for OpenGL and X11 backend
 		if 'gl2' in conf.env['graphics_outputtype']:
 			if conf.checkSimpleLib(['gl'], 'GL/gl.h'):
@@ -606,7 +610,7 @@ if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv or 'cppcheck' 
 				conf.env['graphics_outputtype'].remove('gl2')
 			except ValueError:
 				pass
-	
+
 	# check if OpenGL 2.0 and OpenGL ES are both activated
 	if 'gl2' in conf.env['graphics_outputtype'] and 'gles2' in conf.env['graphics_outputtype']:
 		print '\nOpenGL 2.0 and OpenGL ES 2.0 support is mutually exclusive.' 

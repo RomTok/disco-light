@@ -35,6 +35,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef __HAVE_XRANDR__
+#include <X11/extensions/Xrandr.h>
+#endif
+
 MMS_CREATEERROR(MMSFBManagerError);
 
 /* initialize the mmsfbmanager object */
@@ -238,6 +242,29 @@ void MMSFBManager::applySettings() {
                                                window_pixelformat,
                                                surface_pixelformat))
         throw MMSFBManagerError(0, MMSFB_LastErrorString);
+
+#ifdef __HAVE_XRANDR__
+	if(config.getBackend() == MMSFB_BE_X11 && MMSFBBase_rotate180) {
+		X11_IMPL *impl = (X11_IMPL*)this->graphicslayer->getImplementation();
+		
+		/* check for RandR extension */
+		int event_base, error_base;
+		if (!XRRQueryExtension (impl->x_display, &event_base, &error_base)) {
+			fprintf(stderr, "RandR extension missing: Rotation not supported\n");
+		} else {
+			Window root = DefaultRootWindow(impl->x_display);
+			XRRScreenConfiguration *sc = XRRGetScreenInfo(impl->x_display, root);
+			if(sc) {
+				Rotation rot = RR_Rotate_0;
+				SizeID size = XRRConfigCurrentConfiguration(sc, &rot);
+				if(rot != RR_Rotate_180) {
+					XRRSetScreenConfig(impl->x_display, sc, root, size, RR_Rotate_180, CurrentTime);
+				}
+				MMSFBBase_rotate180 = false;
+			}
+		}		
+	}
+#endif
 
     if (this->videolayerid != this->graphicslayerid) {
 #ifdef  __HAVE_DIRECTFB__
