@@ -586,7 +586,7 @@ if not ('-c' in sys.argv or '-h' in sys.argv or 'doc' in sys.argv or 'cppcheck' 
 		conf.env['CCFLAGS'].extend(['-D__HAVE_XLIB__'])
 		if conf.checkSimpleLib(['xv'], ['X11/Xlib.h', 'X11/extensions/Xvlib.h'], required = 0):
 			conf.env['CCFLAGS'].extend(['-D__HAVE_XV__'])
-		else:
+		elif 'xvshm' in conf.env['graphics_outputtype']:
 			conf.env['graphics_outputtype'].remove('xvshm')
 
 		# check for XRandr to support rotation
