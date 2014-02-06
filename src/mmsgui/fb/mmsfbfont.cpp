@@ -460,7 +460,7 @@ bool MMSFBFont::setupFTGlyph(unsigned int character, void *ftg, MMSFBFont_Glyph 
 		unsigned char *src = g->bitmap.buffer;
 		unsigned char *dst = glyph->buffer;
 		for(int i = 0; i < glyph->height; i++) {
-			memcpy(dst, src, glyph->pitch);
+			memcpy(dst, src, g->bitmap.pitch);
 			src += g->bitmap.pitch;
 			dst += glyph->pitch;
 		}
