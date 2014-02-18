@@ -161,18 +161,22 @@ bool loadFont(MMSFBFont **font, string path, string filename, int width, int hei
     MMSFBFont	*myfont = NULL;
     string    	fontfile;
 
+	/* sanity checks */
+    if (filename.empty())
+        return false;
+
+    if (filename.at(filename.size()-1) == '/')
+        return false;
+
     /* build filename */
-    fontfile = path;
-    if (fontfile != "") fontfile+= "/";
-    fontfile += filename;
+    if(path.empty()) {
+		fontfile = filename;
+	} else {
+		fontfile = path + "/" + filename;
+	}
+	fixPathStr(fontfile);
 
     DEBUGMSG("MMSGUI", "using font file '%s'", fontfile.c_str());
-
-    if (filename == "")
-        return false;
-
-    if (filename.substr(filename.size()-1) == "/")
-        return false;
 
     if (!mmsfb->createFont(&myfont, fontfile, width, height)) {
         if (myfont)

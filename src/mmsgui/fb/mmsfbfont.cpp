@@ -252,6 +252,7 @@ MMSFBFont::~MMSFBFont() {
 			this->ft_library = NULL;
 		}
 	}
+
 	pthread_mutex_unlock(&globalLock);
 }
 

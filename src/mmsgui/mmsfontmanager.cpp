@@ -48,7 +48,6 @@ MMSFontManager::~MMSFontManager() {
 }
 
 MMSFBFont *MMSFontManager::getFont(string path, string filename, unsigned int size) {
-    string          fontfile;
     MMSFM_DESC      fm_desc;
 
     /* build filename */
@@ -57,17 +56,18 @@ MMSFBFont *MMSFontManager::getFont(string path, string filename, unsigned int si
 	}
     
     if(path.empty()) {
-		fontfile = filename;
+		fm_desc.fontfile = filename;
 	} else {
-		fontfile = path +"/" + filename;
+		fm_desc.fontfile = path +"/" + filename;
 	}
+	fixPathStr(fm_desc.fontfile);
 
     // lock threads
     this->lock.lock();
 
     /* search within fonts list */
 	for(vector<MMSFM_DESC>::iterator it = this->fonts.begin(); it != this->fonts.end(); ++it) {
-		if((it->fontfile == fontfile) && (it->size == size)) {
+		if((it->fontfile == fm_desc.fontfile) && (it->size == size)) {
 			it->refcnt++;
 			this->lock.unlock();
 			return it->font;
@@ -76,12 +76,11 @@ MMSFBFont *MMSFontManager::getFont(string path, string filename, unsigned int si
 
     /* load font */
     fm_desc.font = NULL;
-    if (!loadFont(&(fm_desc.font), "", fontfile, 0, size)) {
-        DEBUGMSG("MMSGUI", "cannot load font file '%s'", fontfile.c_str());
+    if (!loadFont(&(fm_desc.font), "", fm_desc.fontfile, 0, size)) {
+        DEBUGMSG("MMSGUI", "cannot load font file '%s'", fm_desc.fontfile.c_str());
         this->lock.unlock();
         return NULL;
     }
-    fm_desc.fontfile = fontfile;
     fm_desc.size = size;
     fm_desc.refcnt = 1;
 

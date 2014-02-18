@@ -842,6 +842,7 @@ void orthoMatrix(MMSMatrix result, float left, float right, float bottom, float 
         return;
 
     MMSMatrix ortho;
+    memset(ortho, 0, sizeof(ortho));
     loadIdentityMatrix(ortho);
     ortho[0][0] = 2.0f / deltaX;
     ortho[3][0] = -(right + left) / deltaX;

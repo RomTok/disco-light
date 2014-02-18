@@ -34,6 +34,10 @@
 #include "mmstools/mmsmutex.h"
 #include "mmsconfig/mmsconfigdata.h"
 #include "mmstools/mmserror.h"
+
+#include <algorithm>
+
+extern "C" {
 #ifdef __HAVE_WORDEXP__
 #include <wordexp.h>
 #endif
@@ -47,6 +51,7 @@
 #ifdef __HAVE_FRIBIDI__
 #include <fribidi/fribidi.h>
 #endif
+}
 
 /* Once-only initialisation of the key */
 static pthread_once_t buffer_key_once = PTHREAD_ONCE_INIT;
@@ -545,6 +550,12 @@ bool strToBool(string s) {
 		return true;
 	else
 		return false;
+}
+
+bool dblSlash(char a, char b) { return (a == '/') && (b == '/'); }
+void fixPathStr(string &path) {
+	std::string::iterator it = std::unique(path.begin(), path.end(), dblSlash);
+	path.resize(std::distance(path.begin(), it));
 }
 
 void executeCmd(string cmd, pid_t *cpid) {

@@ -152,6 +152,13 @@ void trim(string& str);
 
 bool strToBool(string s);
 
+/**
+ * Removes double slashes from strings containing filesystem paths.
+ *
+ * @param	path	string to fix
+ */
+void fixPathStr(string &path);
+
 void executeCmd(string cmd, pid_t *cpid=NULL);
 
 bool file_exist( string filename );
