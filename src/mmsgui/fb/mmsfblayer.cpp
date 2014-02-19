@@ -833,18 +833,20 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 				}
 
 				// map shared memory for x-server communication
-				this->x_shminfo1.shmid    = shmget(0x1234/*IPC_PRIVATE*/, this->x_image1->bytes_per_line * this->x_image1->height, IPC_CREAT | 0777);
+				this->x_shminfo1.shmid    = shmget(IPC_PRIVATE, this->x_image1->bytes_per_line * this->x_image1->height, IPC_CREAT | 0777);
 				this->x_shminfo1.shmaddr  = this->x_image1->data = (char *)shmat(this->x_shminfo1.shmid, 0, 0);
 				this->x_shminfo1.readOnly = False;
 
 				// attach the x-server to that segment
 				if (!XShmAttach(mmsfb->x_display, &this->x_shminfo1)) {
+					shmctl(this->x_shminfo1.shmid, IPC_RMID, 0);
 					XFree(this->x_image1);
 					this->x_image1 = NULL;
 					XUnlockDisplay(mmsfb->x_display);
 					MMSFB_SetError(0, "XShmAttach() failed");
 					return false;
 				}
+				shmctl(this->x_shminfo1.shmid, IPC_RMID, 0);
 
 				// create x11 buffer #2
 				this->x_image2 = XShmCreateImage(mmsfb->x_display, this->x_visual, 32, ZPixmap,
@@ -856,18 +858,20 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 				}
 
 				// map shared memory for x-server communication
-				this->x_shminfo2.shmid    = shmget(0x1235/*IPC_PRIVATE*/, this->x_image2->bytes_per_line * this->x_image2->height, IPC_CREAT | 0777);
+				this->x_shminfo2.shmid    = shmget(IPC_PRIVATE, this->x_image2->bytes_per_line * this->x_image2->height, IPC_CREAT | 0777);
 				this->x_shminfo2.shmaddr  = this->x_image2->data = (char *)shmat(this->x_shminfo2.shmid, 0, 0);
 				this->x_shminfo2.readOnly = False;
 
 				// attach the x-server to that segment
 				if (!XShmAttach(mmsfb->x_display, &this->x_shminfo2)) {
+					shmctl(this->x_shminfo2.shmid, IPC_RMID, 0);
 					XFree(this->x_image2);
 					this->x_image2 = NULL;
 					XUnlockDisplay(mmsfb->x_display);
 					MMSFB_SetError(0, "XShmAttach() failed");
 					return false;
 				}
+				shmctl(this->x_shminfo2.shmid, IPC_RMID, 0);
 
 				if ((mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO)&&(1==0)) {
 
@@ -886,18 +890,20 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 					}
 
 					// map shared memory for x-server communication
-					this->x_shminfo_scaler.shmid    = shmget(0x1236/*IPC_PRIVATE*/, this->x_image_scaler->bytes_per_line * this->x_image_scaler->height, IPC_CREAT | 0777);
+					this->x_shminfo_scaler.shmid    = shmget(IPC_PRIVATE, this->x_image_scaler->bytes_per_line * this->x_image_scaler->height, IPC_CREAT | 0777);
 					this->x_shminfo_scaler.shmaddr  = this->x_image_scaler->data = (char *)shmat(this->x_shminfo_scaler.shmid, 0, 0);
 					this->x_shminfo_scaler.readOnly = False;
 
 					// attach the x-server to that segment
 					if (!XShmAttach(mmsfb->x_display, &this->x_shminfo_scaler)) {
+						shmctl(this->x_shminfo_scaler.shmid, IPC_RMID, 0);
 						XFree(this->x_image_scaler);
 						this->x_image_scaler = NULL;
 						XUnlockDisplay(mmsfb->x_display);
 						MMSFB_SetError(0, "XShmAttach() failed");
 						return false;
 					}
+					shmctl(this->x_shminfo_scaler.shmid, IPC_RMID, 0);
 
 					// create a scaler surface
 					this->scaler = new MMSFBSurface(dest.w, dest.h, this->config.pixelformat,
@@ -975,18 +981,20 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			}
 
 			// map shared memory for x-server communication
-			this->x_shminfo1.shmid    = shmget(0x1234/*IPC_PRIVATE*/, this->x_image1->bytes_per_line * this->x_image1->height, IPC_CREAT | 0777);
+			this->x_shminfo1.shmid    = shmget(IPC_PRIVATE, this->x_image1->bytes_per_line * this->x_image1->height, IPC_CREAT | 0777);
 			this->x_shminfo1.shmaddr  = this->x_image1->data = (char *)shmat(this->x_shminfo1.shmid, 0, 0);
 			this->x_shminfo1.readOnly = False;
 
 			// attach the x-server to that segment
 			if (!XShmAttach(mmsfb->x_display, &this->x_shminfo1)) {
+				shmctl(this->x_shminfo1.shmid, IPC_RMID, 0);
 				XFree(this->x_image1);
 				this->x_image1 = NULL;
 				XUnlockDisplay(mmsfb->x_display);
 				MMSFB_SetError(0, "XShmAttach() failed");
 				return false;
 			}
+			shmctl(this->x_shminfo1.shmid, IPC_RMID, 0);
 
 			// create x11 buffer #2
 			this->x_image2 = XShmCreateImage(mmsfb->x_display, this->x_visual, mmsfb->x_depth, ZPixmap,
@@ -998,18 +1006,20 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			}
 
 			// map shared memory for x-server communication
-			this->x_shminfo2.shmid    = shmget(0x1235/*IPC_PRIVATE*/, this->x_image2->bytes_per_line * this->x_image2->height, IPC_CREAT | 0777);
+			this->x_shminfo2.shmid    = shmget(IPC_PRIVATE, this->x_image2->bytes_per_line * this->x_image2->height, IPC_CREAT | 0777);
 			this->x_shminfo2.shmaddr  = this->x_image2->data = (char *)shmat(this->x_shminfo2.shmid, 0, 0);
 			this->x_shminfo2.readOnly = False;
 
 			// attach the x-server to that segment
 			if (!XShmAttach(mmsfb->x_display, &this->x_shminfo2)) {
+				shmctl(this->x_shminfo2.shmid, IPC_RMID, 0);
 				XFree(this->x_image2);
 				this->x_image2 = NULL;
 				XUnlockDisplay(mmsfb->x_display);
 				MMSFB_SetError(0, "XShmAttach() failed");
 				return false;
 			}
+			shmctl(this->x_shminfo2.shmid, IPC_RMID, 0);
 
 			if ((mmsfb->fullscreen == MMSFB_FSM_TRUE || mmsfb->fullscreen == MMSFB_FSM_ASPECT_RATIO)&&(1==0)) {
 
@@ -1028,18 +1038,20 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 				}
 
 				// map shared memory for x-server communication
-				this->x_shminfo_scaler.shmid    = shmget(0x1236/*IPC_PRIVATE*/, this->x_image_scaler->bytes_per_line * this->x_image_scaler->height, IPC_CREAT | 0777);
+				this->x_shminfo_scaler.shmid    = shmget(IPC_PRIVATE, this->x_image_scaler->bytes_per_line * this->x_image_scaler->height, IPC_CREAT | 0777);
 				this->x_shminfo_scaler.shmaddr  = this->x_image_scaler->data = (char *)shmat(this->x_shminfo_scaler.shmid, 0, 0);
 				this->x_shminfo_scaler.readOnly = False;
 
 				// attach the x-server to that segment
 				if (!XShmAttach(mmsfb->x_display, &this->x_shminfo_scaler)) {
+					shmctl(this->x_shminfo_scaler.shmid, IPC_RMID, 0);
 					XFree(this->x_image_scaler);
 					this->x_image_scaler = NULL;
 					XUnlockDisplay(mmsfb->x_display);
 					MMSFB_SetError(0, "XShmAttach() failed");
 					return false;
 				}
+				shmctl(this->x_shminfo_scaler.shmid, IPC_RMID, 0);
 
 				// create a scaler surface
 				this->scaler = new MMSFBSurface(dest.w, dest.h, this->config.pixelformat,
@@ -1134,7 +1146,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			}
 
 			// map shared memory for x-server communication
-			this->xv_shminfo1.shmid = shmget(0x1234/*IPC_PRIVATE*/, this->xv_image1->data_size, IPC_CREAT | 0777);
+			this->xv_shminfo1.shmid = shmget(IPC_PRIVATE, this->xv_image1->data_size, IPC_CREAT | 0777);
 			if(this->xv_shminfo1.shmid < 0) {
 				MMSFB_SetError(0, string("Error in shmget: ") + strerror(errno));
 				XFree(this->xv_image1);
@@ -1165,7 +1177,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 
 			//XFlush(mmsfb->x_display);
 			XSync(mmsfb->x_display, False);
-		    shmctl(this->xv_shminfo1.shmid, IPC_RMID, 0);
+			shmctl(this->xv_shminfo1.shmid, IPC_RMID, 0);
 
 			// create x11 buffer #2
 			this->xv_image2 = XvShmCreateImage(mmsfb->x_display, mmsfb->xv_port, xvPixFormat, 0, image_width, this->config.h, &this->xv_shminfo2);
@@ -1187,7 +1199,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 			}
 
 			// map shared memory for x-server communication
-			this->xv_shminfo2.shmid    = shmget(0x1235/*IPC_PRIVATE*/, this->xv_image2->data_size, IPC_CREAT | 0777);
+			this->xv_shminfo2.shmid    = shmget(IPC_PRIVATE, this->xv_image2->data_size, IPC_CREAT | 0777);
 			if(this->xv_shminfo2.shmid < 0) {
 				MMSFB_SetError(0, string("Error in shmget: ") + strerror(errno));
 				XFree(this->xv_image1);
@@ -1224,7 +1236,7 @@ bool MMSFBLayer::setConfiguration(int w, int h, MMSFBSurfacePixelFormat pixelfor
 
 			//XFlush(mmsfb->x_display);
 			XSync(mmsfb->x_display, False);
-		    shmctl(this->xv_shminfo2.shmid, IPC_RMID, 0);
+			shmctl(this->xv_shminfo2.shmid, IPC_RMID, 0);
 
 			XSetWindowAttributes x_window_attr;
 			unsigned long x_window_mask;
